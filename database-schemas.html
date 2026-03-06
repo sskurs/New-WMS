@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS Database Schemas</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --header-color: #0f172a;
+            --link-color: #2563eb;
+            --link-hover-color: #1d4ed8;
+            --code-bg: #f1f5f9;
+            --border-color: #e2e8f0;
+            --highlight-bg: #e2e8f0;
+            --comment-color: #64748b;
+            --keyword-color: #be185d;
+            --type-color: #059669;
+            --string-color: #2563eb;
+            --function-color: #7c3aed;
+        }
+        .dark {
+            --bg-color: #1a1b26;
+            --text-color: #a9b1d6;
+            --header-color: #c0caf5;
+            --link-color: #7aa2f7;
+            --link-hover-color: #b4c8f0;
+            --code-bg: #1e202e;
+            --border-color: #3b4261;
+            --highlight-bg: #292e42;
+            --comment-color: #565f89;
+            --keyword-color: #f7768e;
+            --type-color: #73daca;
+            --string-color: #9ece6a;
+            --function-color: #bb9af7;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem 3rem;
+        }
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: var(--header-color);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        h1 { font-size: 2.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { font-size: 2rem; margin-top: 4rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.5rem; color: var(--link-color); }
+        p { margin-bottom: 1rem; }
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: "Fira Code", "Consolas", "Monaco", monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        code .comment { color: var(--comment-color); }
+        code .keyword { color: var(--keyword-color); font-weight: bold; }
+        code .type { color: var(--type-color); }
+        code .string { color: var(--string-color); }
+        code .function { color: var(--function-color); }
+        code .property { color: var(--header-color); }
+    </style>
+</head>
+<body class="dark">
+    <main>
+        <h1>WMS Database Schemas</h1>
+        <p>This document details the proposed database table structures for key warehouse operations: Picking, Packing & Shipping, and Cycle Counting. These schemas are designed for clarity, performance, and referential integrity.</p>
+
+        <section id="picking">
+            <h2>Picking Operations</h2>
+            <p>The picking process begins when an order is ready to be fulfilled. We need a <code>PickLists</code> table to represent the overall task and a <code>PickListItems</code> table for the specific items to be gathered from warehouse locations.</p>
+            
+            <article id="picklists-table">
+                <h3>1. `PickLists` Table</h3>
+                <p>This table acts as the header for a picking task, linking it to a customer order and assigning it to a specific user (the picker).</p>
+                <pre><code><span class="keyword">CREATE TABLE</span> <span class="property">PickLists</span> (
+    <span class="property">PickListID</span> <span class="type">INT</span> <span class="keyword">PRIMARY KEY</span> <span class="keyword">AUTO_INCREMENT</span>,
+    <span class="property">OrderID</span> <span class="type">INT</span> <span class="keyword">NOT NULL</span>, <span class="comment">-- Foreign Key to the Orders table</span>
+    <span class="property">AssignedToUserID</span> <span class="type">INT</span>, <span class="comment">-- Foreign Key to the Users table (the picker)</span>
+    <span class="property">Status</span> <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL DEFAULT</span> <span class="string">'Pending'</span>, <span class="comment">-- e.g., 'Pending', 'In Progress', 'Picked'</span>
+    <span class="property">CreatedAt</span> <span class="type">DATETIME</span> <span class="keyword">NOT NULL DEFAULT</span> <span class="function">CURRENT_TIMESTAMP</span>,
+    <span class="property">CompletedAt</span> <span class="type">DATETIME</span>,
+
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">OrderID</span>) <span class="keyword">REFERENCES</span> <span class="property">Orders</span>(<span class="property">OrderID</span>),
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">AssignedToUserID</span>) <span class="keyword">REFERENCES</span> <span class="property">Users</span>(<span class="property">UserID</span>),
+    <span class="keyword">INDEX</span> <span class="property">idx_picklists_status</span> (<span class="property">Status</span>) <span class="comment">-- Index for quick filtering by status</span>
+);</code></pre>
+            </article>
+
+            <article id="picklistitems-table">
+                <h3>2. `PickListItems` Table</h3>
+                <p>This table details each specific item that needs to be picked for a given <code>PickList</code>, including the source location and quantities.</p>
+                <pre><code><span class="keyword">CREATE TABLE</span> <span class="property">PickListItems</span> (
+    <span class="property">PickListItemID</span> <span class="type">INT</span> <span class="keyword">PRIMARY KEY</span> <span class="keyword">AUTO_INCREMENT</span>,
+    <span class="property">PickListID</span> <span class="type">INT</span> <span class="keyword">NOT NULL</span>, <span class="comment">-- Foreign Key to the PickLists table</span>
+    <span class="property">ProductID</span> <span class="type">INT</span> <span class="keyword">NOT NULL</span>, <span class="comment">-- Foreign Key to the Products table</span>
+    <span class="property">LocationID</span> <span class="type">INT</span> <span class="keyword">NOT NULL</span>, <span class="comment">-- Foreign Key to the Locations table (where to pick from)</span>
+    <span class="property">QuantityToPick</span> <span class="type">INT</span> <span class="keyword">NOT NULL</span>,
+    <span class="property">QuantityPicked</span> <span class="type">INT</span> <span class="keyword">NOT NULL DEFAULT</span> 0,
+    <span class="property">IsPicked</span> <span class="type">BOOLEAN</span> <span class="keyword">NOT NULL DEFAULT</span> <span class="keyword">FALSE</span>,
+
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">PickListID</span>) <span class="keyword">REFERENCES</span> <span class="property">PickLists</span>(<span class="property">PickListID</span>),
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">ProductID</span>) <span class="keyword">REFERENCES</span> <span class="property">Products</span>(<span class="property">ProductID</span>),
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">LocationID</span>) <span class="keyword">REFERENCES</span> <span class="property">Locations</span>(<span class="property">LocationID</span>)
+);</code></pre>
+            </article>
+        </section>
+
+        <section id="packing-shipping">
+            <h2>Packing & Shipping Operations</h2>
+            <p>Once all items on a pick list are marked as 'Picked', the order moves to the packing and shipping stage. This involves creating a physical package and preparing it for shipment.</p>
+            
+            <article id="packedorders-table">
+                <h3>3. `PackedOrders` Table</h3>
+                <p>This table represents a physically packed box or shipment, ready for labeling and final dispatch. It's the bridge between the picking process and the final shipment to the customer.</p>
+                 <pre><code><span class="keyword">CREATE TABLE</span> <span class="property">PackedOrders</span> (
+    <span class="property">PackedOrderID</span> <span class="type">INT</span> <span class="keyword">PRIMARY KEY</span> <span class="keyword">AUTO_INCREMENT</span>,
+    <span class="property">OrderID</span> <span class="type">INT</span> <span class="keyword">NOT NULL UNIQUE</span>, <span class="comment">-- A direct, unique link to the order</span>
+    <span class="property">PackedByUserID</span> <span class="type">INT</span>, <span class="comment">-- Foreign Key to the Users table</span>
+    <span class="property">PackedAt</span> <span class="type">DATETIME</span> <span class="keyword">NOT NULL DEFAULT</span> <span class="function">CURRENT_TIMESTAMP</span>,
+    <span class="property">ShippingLabelURL</span> <span class="type">VARCHAR</span>(255), <span class="comment">-- URL to the generated shipping label</span>
+    <span class="property">TrackingNumber</span> <span class="type">VARCHAR</span>(100),
+    <span class="property">Status</span> <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL DEFAULT</span> <span class="string">'Packed'</span>, <span class="comment">-- e.g., 'Packed', 'Shipped'</span>
+
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">OrderID</span>) <span class="keyword">REFERENCES</span> <span class="property">Orders</span>(<span class="property">OrderID</span>),
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">PackedByUserID</span>) <span class="keyword">REFERENCES</span> <span class="property">Users</span>(<span class="property">UserID</span>),
+    <span class="keyword">INDEX</span> <span class="property">idx_packedorders_status</span> (<span class="property">Status</span>)
+);</code></pre>
+            </article>
+        </section>
+
+        <section id="cycle-counting">
+            <h2>Cycle Counting Operations</h2>
+            <p>Cycle counting is a critical inventory auditing process for maintaining accuracy. It involves periodically counting a small subset of inventory rather than performing a full physical count.</p>
+            
+            <article id="cyclecounts-table">
+                <h3>4. `CycleCounts` Table</h3>
+                <p>This table stores the header information for a cycle count task, such as its status, who initiated it, and when it was created and completed.</p>
+                <pre><code><span class="keyword">CREATE TABLE</span> <span class="property">CycleCounts</span> (
+    <span class="property">CycleCountID</span> <span class="type">INT</span> <span class="keyword">PRIMARY KEY</span> <span class="keyword">AUTO_INCREMENT</span>,
+    <span class="property">Status</span> <span class="type">VARCHAR</span>(50) <span class="keyword">NOT NULL DEFAULT</span> <span class="string">'Pending'</span>, <span class="comment">-- e.g., 'Pending', 'In Progress', 'Completed', 'Adjusted'</span>
+    <span class="property">CreatedAt</span> <span class="type">DATETIME</span> <span class="keyword">NOT NULL DEFAULT</span> <span class="function">CURRENT_TIMESTAMP</span>,
+    <span class="property">CreatedByUserID</span> <span class="type">INT</span>, <span class="comment">-- Foreign Key to the Users table</span>
+    <span class="property">CompletedAt</span> <span class="type">DATETIME</span>,
+
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">CreatedByUserID</span>) <span class="keyword">REFERENCES</span> <span class="property">Users</span>(<span class="property">UserID</span>),
+    <span class="keyword">INDEX</span> <span class="property">idx_cyclecounts_status</span> (<span class="property">Status</span>)
+);</code></pre>
+            </article>
+
+            <article id="cyclecountitems-table">
+                <h3>5. `CycleCountItems` Table</h3>
+                <p>This table holds the specific items and locations that are part of a cycle count task. It records the state of inventory at the time of the count, the actual counted quantity, and the resulting variance.</p>
+                <pre><code><span class="keyword">CREATE TABLE</span> <span class="property">CycleCountItems</span> (
+    <span class="property">CycleCountItemID</span> <span class="type">INT</span> <span class="keyword">PRIMARY KEY</span> <span class="keyword">AUTO_INCREMENT</span>,
+    <span class="property">CycleCountID</span> <span class="type">INT</span> <span class="keyword">NOT NULL</span>, <span class="comment">-- Foreign Key to the CycleCounts table</span>
+    <span class="property">ProductID</span> <span class="type">INT</span> <span class="keyword">NOT NULL</span>,
+    <span class="property">LocationID</span> <span class="type">INT</span> <span class="keyword">NOT NULL</span>,
+    <span class="property">SystemQuantity</span> <span class="type">INT</span> <span class="keyword">NOT NULL</span>, <span class="comment">-- The quantity recorded in the system when the count was created</span>
+    <span class="property">CountedQuantity</span> <span class="type">INT</span>, <span class="comment">-- The actual quantity counted by the user</span>
+    <span class="property">CountedAt</span> <span class="type">DATETIME</span>,
+    <span class="property">CountedByUserID</span> <span class="type">INT</span>, <span class="comment">-- Foreign Key to the Users table</span>
+    <span class="property">Variance</span> <span class="type">INT</span> <span class="keyword">GENERATED ALWAYS AS</span> (<span class="property">CountedQuantity</span> - <span class="property">SystemQuantity</span>) <span class="keyword">STORED</span>, <span class="comment">-- Calculated difference</span>
+
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">CycleCountID</span>) <span class="keyword">REFERENCES</span> <span class="property">CycleCounts</span>(<span class="property">CycleCountID</span>),
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">ProductID</span>) <span class="keyword">REFERENCES</span> <span class="property">Products</span>(<span class="property">ProductID</span>),
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">LocationID</span>) <span class="keyword">REFERENCES</span> <span class="property">Locations</span>(<span class="property">LocationID</span>),
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">CountedByUserID</span>) <span class="keyword">REFERENCES</span> <span class="property">Users</span>(<span class="property">UserID</span>),
+    <span class="keyword">UNIQUE KEY</span> <span class="property">uq_cycle_item</span> (<span class="property">CycleCountID</span>, <span class="property">ProductID</span>, <span class="property">LocationID</span>) <span class="comment">-- Prevents duplicate items in the same count</span>
+);</code></pre>
+            </article>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS Specification: Standalone Vendor Return Management</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --header-color: #0f172a;
+            --link-color: #0891b2;
+            --code-bg: #f1f5f9;
+            --border-color: #e2e8f0;
+            --highlight-bg: #ecfeff;
+            --highlight-text: #164e63;
+            --danger-bg: #fef2f2;
+            --danger-text: #991b1b;
+            --comment-color: #64748b;
+            --keyword-color: #be185d;
+            --type-color: #059669;
+            --key-color: #0b7493;
+            --string-color: #0891b2;
+        }
+        .dark {
+            --bg-color: #0f172a;
+            --text-color: #94a3b8;
+            --header-color: #f1f5f9;
+            --link-color: #22d3ee;
+            --code-bg: #1e293b;
+            --border-color: #334155;
+            --highlight-bg: #164e63;
+            --highlight-text: #22d3ee;
+            --comment-color: #64748b;
+            --keyword-color: #fb7185;
+            --type-color: #34d399;
+            --key-color: #38bdf8;
+            --string-color: #22d3ee;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px;
+        }
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: var(--header-color);
+            margin-bottom: 1rem;
+        }
+        h1 { font-size: 2.2rem; border-bottom: 3px solid var(--link-color); padding-bottom: 10px; }
+        h2 { font-size: 1.8rem; margin-top: 3rem; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+        .module-desc {
+            background: var(--highlight-bg);
+            color: var(--highlight-text);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--link-color);
+            margin-bottom: 2rem;
+        }
+        .endpoint-block {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .endpoint-header {
+            padding: 12px 20px;
+            background: rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: monospace;
+        }
+        .method-post { background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .method-get { background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .method-put { background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .endpoint-content { padding: 20px; }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            font-family: "Fira Code", monospace;
+            font-size: 0.9rem;
+        }
+        code .key { color: var(--key-color); }
+        code .string { color: var(--string-color); }
+        code .number { color: var(--keyword-color); }
+        code .comment { color: var(--comment-color); font-style: italic; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th { background: rgba(0,0,0,0.02); font-weight: 600; }
+        .status-flow {
+            display: flex;
+            justify-content: space-between;
+            margin: 30px 0;
+            position: relative;
+        }
+        .status-step {
+            background: var(--code-bg);
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body class="dark">
+    <main>
+        <h1>Technical Specification: Vendor Return Management</h1>
+        
+        <div class="module-desc">
+            <strong>Architecture Decision:</strong> This module is built as a standalone service (RTV - Return to Vendor) independent of the Customer RMA system. This separation allows for specialized logic handling <strong>Debit Notes</strong>, <strong>Tax Reversals</strong>, and <strong>Batch-specific warehouse extraction</strong> that differ from consumer return workflows.
+        </div>
+
+        <section id="database">
+            <h2>1. Database Schema (Independent RTV)</h2>
+            <p>Dedicated tables to track outbound logistics for defective or overstock supplier items.</p>
+            
+            <h3>Table: VendorReturnHeader</h3>
+            <table>
+                <thead>
+                    <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Comment</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>rtvId</td><td>INT</td><td>PK, AI</td><td>Unique Return to Vendor ID</td></tr>
+                    <tr><td>supplierId</td><td>INT</td><td>FK</td><td>Link to Supplier Master</td></tr>
+                    <tr><td>purchaseOrderId</td><td>INT</td><td>FK</td><td>Reference original PO</td></tr>
+                    <tr><td>debitNoteNumber</td><td>VARCHAR(50)</td><td>Unique</td><td>Financial Reference</td></tr>
+                    <tr><td>status</td><td>VARCHAR(20)</td><td>-</td><td>Draft, Approved, Outbound, Settled</td></tr>
+                    <tr><td>totalValue</td><td>DECIMAL(14,2)</td><td>-</td><td>Calculated sum of items</td></tr>
+                    <tr><td>dispatchDate</td><td>DATETIME</td><td>-</td><td>Physical shipment date</td></tr>
+                </tbody>
+            </table>
+
+            <h3>Table: VendorReturnItems</h3>
+            <table>
+                <thead>
+                    <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Comment</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>itemId</td><td>INT</td><td>PK, AI</td><td>Line item ID</td></tr>
+                    <tr><td>rtvId</td><td>INT</td><td>FK</td><td>Header link</td></tr>
+                    <tr><td>productId</td><td>INT</td><td>FK</td><td>Product ID</td></tr>
+                    <tr><td>batchId</td><td>VARCHAR(50)</td><td>-</td><td>Specific batch being sent back</td></tr>
+                    <tr><td>quantity</td><td>INT</td><td>-</td><td>Units to return</td></tr>
+                    <tr><td>reasonCode</td><td>VARCHAR(10)</td><td>-</td><td>EXP (Expired), DMG (Damaged), OVR (Overstock)</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="api">
+            <h2>2. API Endpoints Specification</h2>
+
+            <!-- CREATE ENDPOINT -->
+            <div class="endpoint-block">
+                <div class="endpoint-header">
+                    <span class="method-post">POST</span>
+                    <span>/api/v1/logistics/rtv/initiate</span>
+                </div>
+                <div class="endpoint-content">
+                    <p>Initializes a new vendor return request. Validates stock availability in the specific warehouse before approval.</p>
+                    <h3>Request Payload</h3>
+                    <pre><code>{
+  <span class="key">"supplierId"</span>: <span class="number">2044</span>,
+  <span class="key">"purchaseOrderId"</span>: <span class="number">8812</span>,
+  <span class="key">"warehouseId"</span>: <span class="number">7</span>,
+  <span class="key">"items"</span>: [
+    {
+      <span class="key">"productId"</span>: <span class="number">101</span>,
+      <span class="key">"quantity"</span>: <span class="number">15</span>,
+      <span class="key">"batchId"</span>: <span class="string">"B-2024-X9"</span>,
+      <span class="key">"reason"</span>: <span class="string">"DMG"</span>
+    }
+  ],
+  <span class="key">"notes"</span>: <span class="string">"Returned due to physical packaging damage during transit"</span>
+}</code></pre>
+                    <h3>Response Payload (201 Created)</h3>
+                    <pre><code>{
+  <span class="key">"success"</span>: <span class="boolean">true</span>,
+  <span class="key">"rtvId"</span>: <span class="number">50012</span>,
+  <span class="key">"status"</span>: <span class="string">"Draft"</span>,
+  <span class="key">"message"</span>: <span class="string">"Vendor return initiated. Stock marked as 'Restricted-Return'."</span>
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- STATUS UPDATE ENDPOINT -->
+            <div class="endpoint-block">
+                <div class="endpoint-header">
+                    <span class="method-put">PUT</span>
+                    <span>/api/v1/logistics/rtv/{rtvId}/dispatch</span>
+                </div>
+                <div class="endpoint-content">
+                    <p>Triggered when the goods physically leave the warehouse. This endpoint <strong>decrements</strong> the inventory ledger permanently.</p>
+                    <h3>Request Payload</h3>
+                    <pre><code>{
+  <span class="key">"trackingNumber"</span>: <span class="string">"TRK8827110"</span>,
+  <span class="key">"transporterName"</span>: <span class="string">"BlueDart Logistics"</span>,
+  <span class="key">"dispatchDocs"</span>: [<span class="string">"base64_string_of_gate_pass"</span>]
+}</code></pre>
+                    <h3>Response Payload (200 OK)</h3>
+                    <pre><code>{
+  <span class="key">"success"</span>: <span class="boolean">true</span>,
+  <span class="key">"inventoryUpdated"</span>: <span class="boolean">true</span>,
+  <span class="key">"debitNoteGenerated"</span>: <span class="string">"DN-2025-001"</span>
+}</code></pre>
+                </div>
+            </div>
+
+            <!-- GET LIST ENDPOINT -->
+            <div class="endpoint-block">
+                <div class="endpoint-header">
+                    <span class="method-get">GET</span>
+                    <span>/api/v1/logistics/rtv/list?status=Approved</span>
+                </div>
+                <div class="endpoint-content">
+                    <p>Fetches a filtered list of vendor returns for the logistics dashboard.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="workflow">
+            <h2>3. Operational Status Flow</h2>
+            <div class="status-flow">
+                <div class="status-step">1. Draft (Inspection)</div>
+                <div class="status-step">2. Approved (Finance)</div>
+                <div class="status-step">3. Shipped (Logistics)</div>
+                <div class="status-step">4. Settled (Accounts)</div>
+            </div>
+            <ul>
+                <li><strong>Draft:</strong> Items are physically separated but still in system inventory (marked 'Restricted').</li>
+                <li><strong>Approved:</strong> Finance has verified the Debit Note value.</li>
+                <li><strong>Shipped:</strong> Gate pass issued. <strong>Inventory count is subtracted here.</strong></li>
+                <li><strong>Settled:</strong> Supplier acknowledged receipt and adjusted the outstanding balance.</li>
+            </ul>
+        </section>
+    </main>
+</body>
+</html>

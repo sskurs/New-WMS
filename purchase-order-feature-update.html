@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS Feature Update: Dynamic Product Loading by Supplier</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --header-color: #0f172a;
+            --link-color: #2563eb;
+            --code-bg: #f1f5f9;
+            --border-color: #e2e8f0;
+            --highlight-bg: #e0f2fe;
+            --highlight-text: #0c4a6e;
+            --success-bg: #f0fdf4;
+            --success-text: #166534;
+            --comment-color: #64748b;
+            --key-color: #0b7493;
+            --string-color: #22c55e;
+            --number-color: #f97316;
+        }
+        .dark {
+            --bg-color: #1a1b26;
+            --text-color: #a9b1d6;
+            --header-color: #c0caf5;
+            --link-color: #7aa2f7;
+            --code-bg: #1e202e;
+            --border-color: #3b4261;
+            --highlight-bg: #2a3a5a;
+            --highlight-text: #7aa2f7;
+            --success-bg: #2c4238;
+            --success-text: #9ece6a;
+            --comment-color: #565f89;
+            --key-color: #7dcfff;
+            --string-color: #9ece6a;
+            --number-color: #ff9e64;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem 3rem;
+        }
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: var(--header-color);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        h1 { font-size: 2.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { font-size: 2rem; margin-top: 3rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.5rem; color: var(--link-color); }
+        p, ul, .endpoint-meta { margin-bottom: 1rem; }
+        .endpoint-meta span {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-family: "Fira Code", "Consolas", monospace;
+            font-size: 0.9em;
+            margin-right: 0.5rem;
+        }
+        .endpoint-meta .method-GET { background-color: #61affe; color: #fff; font-weight: bold; }
+        .endpoint-meta .path { background-color: var(--highlight-bg); color: var(--text-color); }
+        ul { padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: "Fira Code", "Consolas", "Monaco", monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        code .comment { color: var(--comment-color); }
+        code .key { color: var(--key-color); }
+        code .string { color: var(--string-color); }
+        code .number { color: var(--number-color); }
+        .feature-box {
+            background-color: var(--highlight-bg);
+            border-left: 4px solid var(--link-color);
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin-top: 1.5rem;
+        }
+        .feature-box p {
+            color: var(--highlight-text);
+            margin: 0;
+        }
+        .benefits-box {
+            background-color: var(--success-bg);
+            border-left: 4px solid var(--success-text);
+            padding: 1.5rem;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+<body class="dark">
+    <main>
+        <h1>Feature Update: Dynamic Product Loading by Supplier</h1>
+        <p>This document outlines a functional enhancement to the Purchase Order (PO) creation form, introducing a backend-driven approach for populating product dropdowns based on the selected supplier.</p>
+        
+        <h2>Change Request</h2>
+        <p>The core of this update is to make the product selection process more intuitive and error-proof by dynamically fetching and displaying only the products associated with the chosen supplier.</p>
+        
+        <div class="feature-box">
+            <p><strong>New Behavior:</strong> When a user selects a supplier, an API call will be made to the backend to retrieve a list of products exclusively offered by that supplier. The product dropdowns on the form will then be populated with this filtered list.</p>
+        </div>
+
+        <h2>User Workflow</h2>
+        <ol>
+            <li><strong>Initial State:</strong> The user navigates to the "Create Purchase Order" form. The product dropdowns are disabled.</li>
+            <li><strong>Supplier Selection:</strong> The user selects a supplier from the main "Supplier" dropdown menu.</li>
+            <li><strong>API Call:</strong> The frontend makes an API request to a new endpoint, passing the selected supplier's ID.</li>
+            <li><strong>Product Population:</strong> The product dropdowns are enabled and populated with the list of products returned from the API.</li>
+            <li><strong>Supplier Change:</strong> If the user changes the supplier, the process repeats. Any previously selected products on line items are cleared to ensure data integrity.</li>
+        </ol>
+
+        <h2>API Specification</h2>
+        <p>A new backend endpoint is required to support this feature.</p>
+
+        <h3>Get Products by Supplier ID</h3>
+        <div class="endpoint-meta">
+            <span class="method-GET">GET</span>
+            <span class="path">/api/Product/GetBySupplierId?supplierId={id}</span>
+        </div>
+        <ul>
+            <li><strong>Description:</strong> Fetches a list of products associated with a specific supplier. This is designed to be a lightweight endpoint for populating dropdowns efficiently.</li>
+            <li><strong>URL Parameters:</strong>
+                <ul>
+                    <li><code>supplierId</code> (required): The unique identifier (integer) of the supplier.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>Expected Success Response (200 OK)</h3>
+        <p>The endpoint should return a JSON array of product objects. Each object should contain the essential information needed for the dropdown (ID and Name) and any other useful data like SKU.</p>
+        <pre><code>[
+  {
+    <span class="key">"productId"</span>: <span class="number">101</span>,
+    <span class="key">"productName"</span>: <span class="string">"Quantum SSD 512GB"</span>,
+    <span class="key">"sku"</span>: <span class="string">"ELEC-QUA-512"</span>,
+    <span class="key">"cost"</span>: <span class="number">4500.00</span> <span class="comment">// The supplier-specific cost price</span>
+  },
+  {
+    <span class="key">"productId"</span>: <span class="number">102</span>,
+    <span class="key">"productName"</span>: <span class="string">"Quantum SSD 1TB"</span>,
+    <span class="key">"sku"</span>: <span class="string">"ELEC-QUA-1024"</span>,
+    <span class="key">"cost"</span>: <span class="number">8200.00</span>
+  },
+  {
+    <span class="key">"productId"</span>: <span class="number">125</span>,
+    <span class="key">"productName"</span>: <span class="string">"Advanced Cooling Fan"</span>,
+    <span class="key">"sku"</span>: <span class="string">"ELEC-FAN-ADV"</span>,
+    <span class="key">"cost"</span>: <span class="number">750.50</span>
+  }
+]</code></pre>
+
+        <h3>Frontend Implementation Notes</h3>
+        <ul>
+            <li>The <code>components/suppliers/PurchaseOrderForm.tsx</code> will be modified.</li>
+            <li>An <code>useEffect</code> hook should be implemented to watch for changes to the selected <code>supplierId</code>.</li>
+            <li>When <code>supplierId</code> changes, a new API call should be made to the endpoint defined above.</li>
+            <li>A new state variable (e.g., <code>supplierProducts</code>) will be needed to store the fetched list of products.</li>
+            <li>Loading and error states for the API call must be handled to provide user feedback (e.g., showing a spinner in the product dropdown while loading).</li>
+        </ul>
+        
+        <div class="benefits-box">
+            <h3>Benefits of this Update</h3>
+            <ul>
+                <li><strong>Reduced Errors:</strong> Prevents users from accidentally ordering a product from the wrong supplier.</li>
+                <li><strong>Improved Performance:</strong> Avoids loading the entire product catalog on the PO page, leading to faster load times.</li>
+                <li><strong>Enhanced User Experience:</strong> Creates a more logical and efficient workflow for the user.</li>
+                <li><strong>Scalability:</strong> The system will perform well even as the number of products grows into the thousands.</li>
+            </ul>
+        </div>
+        
+    </main>
+</body>
+</html>

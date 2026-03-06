@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMSPro Implementation Guide: RFID/QR Code Scanning</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --header-color: #0f172a;
+            --link-color: #2563eb;
+            --link-hover-color: #1d4ed8;
+            --code-bg: #f1f5f9;
+            --border-color: #e2e8f0;
+            --highlight-bg: #e0f2fe;
+            --highlight-text: #0c4a6e;
+            --comment-color: #64748b;
+            --keyword-color: #be185d;
+            --type-color: #059669;
+            --string-color: #2563eb;
+            --function-color: #7c3aed;
+        }
+        .dark {
+            --bg-color: #1a1b26;
+            --text-color: #a9b1d6;
+            --header-color: #c0caf5;
+            --link-color: #7aa2f7;
+            --link-hover-color: #b4c8f0;
+            --code-bg: #1e202e;
+            --border-color: #3b4261;
+            --highlight-bg: #2a3a5a;
+            --highlight-text: #7aa2f7;
+            --comment-color: #565f89;
+            --keyword-color: #f7768e;
+            --type-color: #73daca;
+            --string-color: #9ece6a;
+            --function-color: #bb9af7;
+            --key-color: #7dcfff;
+            --number-color: #ff9e64;
+            --boolean-color: #bb9af7;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem 3rem;
+        }
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: var(--header-color);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        h1 { font-size: 2.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { font-size: 2rem; margin-top: 3rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.5rem; color: var(--link-color); }
+        p, ul, .endpoint-meta { margin-bottom: 1rem; }
+        ul { padding-left: 1.5rem; }
+        li { margin-bottom: 0.5rem; }
+        .endpoint-meta span {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-family: "Fira Code", "Consolas", monospace;
+            font-size: 0.9em;
+            margin-right: 0.5rem;
+        }
+        .endpoint-meta .method-GET { background-color: #61affe; color: #fff; font-weight: bold; }
+        .endpoint-meta .path { background-color: var(--highlight-bg); color: var(--text-color); }
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: "Fira Code", "Consolas", "Monaco", monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        code .comment { color: var(--comment-color); }
+        code .keyword { color: var(--keyword-color); font-weight: bold; }
+        code .type { color: var(--type-color); }
+        code .string { color: var(--string-color); }
+        code .function { color: var(--function-color); }
+        code .property { color: var(--header-color); }
+        code .key { color: var(--key-color); }
+        code .number { color: var(--number-color); }
+        code .boolean { color: var(--boolean-color); }
+        .feature-box {
+            background-color: var(--highlight-bg);
+            border-left: 4px solid var(--link-color);
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin-top: 1.5rem;
+        }
+        .feature-box p { color: var(--highlight-text); margin: 0; }
+    </style>
+</head>
+<body class="dark">
+    <main>
+        <h1>Implementation Guide: RFID/QR Code Scanning</h1>
+        <p>This document outlines the technical approach for integrating RFID and QR code scanning capabilities into the WMSPro application. The goal is to accelerate workflows such as receiving, put-away, picking, and cycle counting by reducing manual data entry and minimizing errors.</p>
+
+        <section id="workflow">
+            <h2>High-Level Workflow</h2>
+            <ol>
+                <li><strong>Initiate Scan:</strong> A user clicks a "Scan" button or focuses an input field on a relevant page (e.g., Cycle Counting).</li>
+                <li><strong>Capture Data:</strong>
+                    <ul>
+                        <li><strong>QR Code:</strong> The device's camera is activated to scan a QR code.</li>
+                        <li><strong>RFID:</strong> A connected hardware scanner reads an RFID tag and inputs the data (typically via keyboard emulation).</li>
+                    </ul>
+                </li>
+                <li><strong>Data Lookup:</strong> The captured data (e.g., a product SKU or a location code) is sent to the backend via a dedicated API endpoint.</li>
+                <li><strong>Backend Processing:</strong> The backend queries the database to find the entity (Product, Location, etc.) matching the scanned code.</li>
+                <li><strong>Frontend Action:</strong> The backend returns the entity's data. The frontend uses this data to automatically select the item, pre-fill a form, or display relevant details, completing the action.</li>
+            </ol>
+        </section>
+
+        <section id="database">
+            <h2>Database Design</h2>
+            <p>No major schema changes are required. The implementation will leverage existing unique identifiers on the core tables. It is critical, however, to ensure these columns are indexed for fast lookups.</p>
+
+            <h3>Key Columns for Encoding</h3>
+            <ul>
+                <li><strong>Products Table:</strong> The <code>SKU</code> column should be used as the unique identifier encoded in QR codes for products.</li>
+                <li><strong>Locations Table:</strong> The <code>LocationCode</code> column should be used for QR codes on bins, shelves, and racks.</li>
+            </ul>
+
+            <h4>Indexing Recommendation</h4>
+            <pre><code><span class="comment">-- Ensure unique identifiers are indexed for fast lookups</span>
+<span class="keyword">CREATE UNIQUE INDEX</span> <span class="property">idx_products_sku</span> <span class="keyword">ON</span> <span class="property">Products</span>(<span class="property">SKU</span>);
+
+<span class="keyword">CREATE UNIQUE INDEX</span> <span class="property">idx_locations_code</span> <span class="keyword">ON</span> <span class="property">Locations</span>(<span class="property">LocationCode</span>);</code></pre>
+        </section>
+
+        <section id="backend">
+            <h2>Backend Implementation</h2>
+            <p>A single, versatile endpoint is needed to handle lookups for any scanned code.</p>
+
+            <h3>Lookup Endpoint</h3>
+            <div class="endpoint-meta">
+                <span class="method-GET">GET</span>
+                <span class="path">/api/lookup/{code}</span>
+            </div>
+            <p>This endpoint will take a scanned code and attempt to find a matching Product, Location, or other entity in the database.</p>
+
+            <h4>Behavior</h4>
+            <ol>
+                <li>The endpoint receives the <code>code</code> from the URL.</li>
+                <li>It first queries the <code>Products</code> table for a matching <code>SKU</code>.</li>
+                <li>If a product is found, it returns a JSON object with a <code>type: 'product'</code> and the product data.</li>
+                <li>If not found, it queries the <code>Locations</code> table for a matching <code>LocationCode</code>.</li>
+                <li>If a location is found, it returns a JSON object with a <code>type: 'location'</code> and the location data.</li>
+                <li>If no match is found in any relevant table, it returns a 404 Not Found error.</li>
+            </ol>
+
+            <h4>Success Response Example (Product Found)</h4>
+            <pre><code><span class="comment">// STATUS 200 OK</span>
+{
+  <span class="key">"type"</span>: <span class="string">"product"</span>,
+  <span class="key">"data"</span>: {
+    <span class="key">"productId"</span>: <span class="number">101</span>,
+    <span class="key">"productName"</span>: <span class="string">"Quantum SSD 512GB"</span>,
+    <span class="key">"sku"</span>: <span class="string">"ELEC-QUA-512"</span>,
+    <span class="key">"price"</span>: <span class="number">4500.00</span>,
+    <span class="comment">// ... other product fields</span>
+  }
+}</code></pre>
+        </section>
+
+        <section id="frontend">
+            <h2>Frontend Implementation</h2>
+            <p>The frontend will handle both camera-based QR scanning and keyboard-wedge RFID input.</p>
+
+            <h3>1. QR Code Scanning (Camera)</h3>
+            <p>This requires requesting camera permissions from the user. We must add <code>"camera"</code> to the <code>requestFramePermissions</code> array in <code>metadata.json</code>.</p>
+            <div class="feature-box"><p><strong>Note:</strong> The application will need a library like <code>jsqr</code> to decode the video stream from the camera in real-time.</p></div>
+            
+            <h4>Example `QrScanner` Component</h4>
+            <pre><code><span class="comment">// components/inventory/QrScanner.tsx</span>
+<span class="keyword">import</span> React, { useRef, useEffect } <span class="keyword">from</span> <span class="string">'react'</span>;
+<span class="keyword">import</span> jsQR <span class="keyword">from</span> <span class="string">'jsqr'</span>;
+
+<span class="keyword">interface</span> QrScannerProps {
+  onScan: (data: string) => <span class="type">void</span>;
+  onClose: () => <span class="type">void</span>;
+}
+
+<span class="keyword">const</span> QrScanner: React.FC&lt;QrScannerProps&gt; = ({ onScan, onClose }) => {
+  <span class="keyword">const</span> videoRef = useRef&lt;HTMLVideoElement&gt;(<span class="keyword">null</span>);
+  <span class="keyword">const</span> canvasRef = useRef&lt;HTMLCanvasElement&gt;(<span class="keyword">null</span>);
+
+  useEffect(() => {
+    <span class="comment">// ... code to access camera with navigator.mediaDevices.getUserMedia ...</span>
+    <span class="comment">// ... code to draw video to canvas and scan for QR code with jsQR ...</span>
+    
+    <span class="keyword">const</span> tick = () => {
+      <span class="comment">// ... scanning logic ...</span>
+      <span class="keyword">const</span> code = jsQR(imageData, width, height);
+      <span class="keyword">if</span> (code) {
+        onScan(code.data);
+        onClose();
+      } <span class="keyword">else</span> {
+        requestAnimationFrame(tick);
+      }
+    };
+    requestAnimationFrame(tick);
+  }, [onScan, onClose]);
+
+  <span class="keyword">return</span> (
+    &lt;div <span class="property">className</span>=<span class="string">"fixed inset-0 bg-black/80 z-50"</span>&gt;
+      &lt;video <span class="property">ref</span>={videoRef} <span class="property">style</span>={{ <span class="property">width</span>: <span class="string">'100%'</span>, <span class="property">height</span>: <span class="string">'100%'</span> }} /&gt;
+      &lt;canvas <span class="property">ref</span>={canvasRef} <span class="property">className</span>=<span class="string">"hidden"</span> /&gt;
+      &lt;button <span class="property">onClick</span>={onClose}&gt;Close&lt;/button&gt;
+    &lt;/div&gt;
+  );
+};</code></pre>
+
+            <h3>2. RFID Scanning (Keyboard Wedge)</h3>
+            <p>Most handheld RFID scanners can be configured in "keyboard wedge" mode, where they emulate a keyboard and "type" the scanned data, followed by an "Enter" key press. We can capture this with a simple input field.</p>
+            
+             <h4>Example `RfidInput` Component</h4>
+             <pre><code><span class="comment">// components/inventory/RfidInput.tsx</span>
+<span class="keyword">import</span> React, { useState, useEffect } <span class="keyword">from</span> <span class="string">'react'</span>;
+
+<span class="keyword">interface</span> RfidInputProps {
+  onScan: (data: string) => <span class="type">void</span>;
+}
+
+<span class="keyword">const</span> RfidInput: React.FC&lt;RfidInputProps&gt; = ({ onScan }) => {
+    <span class="keyword">const</span> [value, setValue] = useState(<span class="string">''</span>);
+
+    <span class="keyword">const</span> handleKeyDown = (e: React.KeyboardEvent&lt;HTMLInputElement&gt;) => {
+        <span class="keyword">if</span> (e.key === <span class="string">'Enter'</span> && value.trim()) {
+            onScan(value.trim());
+            setValue(<span class="string">''</span>);
+        }
+    };
+
+    <span class="keyword">return</span> (
+        &lt;input
+            <span class="property">type</span>=<span class="string">"text"</span>
+            <span class="property">placeholder</span>=<span class="string">"Scan RFID tag..."</span>
+            <span class="property">value</span>={value}
+            <span class="property">onChange</span>={e => setValue(e.target.value)}
+            <span class="property">onKeyDown</span>={handleKeyDown}
+            <span class="property">autoFocus</span>
+        /&gt;
+    );
+};</code></pre>
+        </section>
+
+        <section id="integration">
+            <h2>Integration Examples</h2>
+            
+            <h3>Cycle Counting</h3>
+            <p>On the Cycle Counting page, a "Scan Item" button would open the <code>QrScanner</code> modal. Upon scanning a product's QR code, the frontend would call <code>/api/lookup/{sku}</code>. If a product is returned, the form would automatically find that product in the count list and focus the "Counted Quantity" input for the user.</p>
+
+            <h3>Put-Away</h3>
+            <p>During the put-away process, the user first selects an item to move. Then, they could click "Scan Location". Scanning a bin's QR code would call <code>/api/lookup/{locationCode}</code>. On success, the system would confirm that this is a valid location and automatically pre-fill it as the destination, ready for the user to confirm the put-away action.</p>
+        </section>
+    </main>
+</body>
+</html>

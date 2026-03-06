@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS Implementation Guide: Vendor Returns & Code Reuse</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --header-color: #0f172a;
+            --link-color: #2563eb;
+            --code-bg: #f1f5f9;
+            --border-color: #e2e8f0;
+            --highlight-bg: #e0f2fe;
+            --highlight-text: #0c4a6e;
+            --success-bg: #f0fdf4;
+            --success-text: #166534;
+            --comment-color: #64748b;
+            --keyword-color: #be185d;
+            --type-color: #059669;
+            --key-color: #0b7493;
+            --string-color: #22c55e;
+        }
+        .dark {
+            --bg-color: #1a1b26;
+            --text-color: #a9b1d6;
+            --header-color: #c0caf5;
+            --link-color: #7aa2f7;
+            --code-bg: #1e202e;
+            --border-color: #3b4261;
+            --highlight-bg: #2a3a5a;
+            --highlight-text: #7aa2f7;
+            --success-bg: #2c4238;
+            --success-text: #9ece6a;
+            --comment-color: #565f89;
+            --keyword-color: #f7768e;
+            --type-color: #73daca;
+            --key-color: #7dcfff;
+            --string-color: #9ece6a;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem 3rem;
+        }
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: var(--header-color);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        h1 { font-size: 2.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { font-size: 2rem; margin-top: 3.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.4rem; color: var(--link-color); }
+        p, ul, li { margin-bottom: 1rem; }
+        .endpoint-meta span {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin-right: 0.5rem;
+        }
+        .endpoint-meta .method-POST { background-color: #49cc90; color: #fff; font-weight: bold; }
+        .endpoint-meta .method-GET { background-color: #61affe; color: #fff; font-weight: bold; }
+        .endpoint-meta .path { background-color: var(--highlight-bg); color: var(--text-color); }
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: "Fira Code", monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        code .comment { color: var(--comment-color); }
+        code .keyword { color: var(--keyword-color); font-weight: bold; }
+        code .key { color: var(--key-color); }
+        code .string { color: var(--string-color); }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .comparison-card {
+            background: var(--code-bg);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .strategy-box {
+            background-color: var(--highlight-bg);
+            border-left: 4px solid var(--link-color);
+            padding: 1.5rem;
+            border-radius: 6px;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body class="dark">
+    <main>
+        <h1>Vendor Returns Implementation Guide</h1>
+        <p>This document details the transition from a siloed Customer RMA process to a unified Return management architecture that supports both Customer (B2C) and Vendor (B2B) returns.</p>
+
+        <section id="database-design">
+            <h2>1. Database Design</h2>
+            <p>To maximize code reuse, we leverage a polymorphic approach or a unified header table with a discriminator.</p>
+
+            <h3>Unified Return Header Table</h3>
+            <p>We extend the existing Customer RMA schema to handle Vendor specific fields while sharing core properties like reasons, status, and audit trails.</p>
+
+            <pre><code><span class="keyword">CREATE TABLE</span> <span class="property">ReturnMaster</span> (
+    <span class="property">id</span> <span class="type">INT</span> <span class="keyword">PRIMARY KEY AUTO_INCREMENT</span>,
+    <span class="property">returnType</span> <span class="type">VARCHAR(20)</span> <span class="keyword">NOT NULL</span>, <span class="comment">-- 'Customer' or 'Vendor'</span>
+    <span class="property">referenceId</span> <span class="type">VARCHAR(20)</span>, <span class="comment">-- OrderId for customers, PONumber for vendors</span>
+    <span class="property">entityId</span> <span class="type">INT</span>, <span class="comment">-- CustomerID or SupplierID</span>
+    <span class="property">reason</span> <span class="type">VARCHAR(255)</span>,
+    <span class="property">status</span> <span class="type">VARCHAR(50)</span>, <span class="comment">-- Shared states: Pending, Approved, Shipped, Completed</span>
+    <span class="property">priority</span> <span class="type">VARCHAR(20)</span>,
+    <span class="property">totalValue</span> <span class="type">DECIMAL(10,2)</span>, <span class="comment">-- Refund for customers, Credit Note for vendors</span>
+    <span class="property">createdAt</span> <span class="type">DATETIME</span> <span class="keyword">DEFAULT CURRENT_TIMESTAMP</span>,
+    <span class="property">isArchived</span> <span class="type">INT</span> <span class="keyword">DEFAULT</span> 0
+);
+
+<span class="keyword">CREATE TABLE</span> <span class="property">ReturnDetails</span> (
+    <span class="property">id</span> <span class="type">INT</span> <span class="keyword">PRIMARY KEY AUTO_INCREMENT</span>,
+    <span class="property">returnId</span> <span class="type">INT</span>, <span class="comment">-- FK to ReturnMaster</span>
+    <span class="property">productId</span> <span class="type">INT</span>,
+    <span class="property">quantity</span> <span class="type">INT</span>,
+    <span class="property">unitCost</span> <span class="type">DECIMAL(10,2)</span>,
+    <span class="keyword">FOREIGN KEY</span> (<span class="property">returnId</span>) <span class="keyword">REFERENCES</span> <span class="property">ReturnMaster</span>(<span class="property">id</span>)
+);</code></pre>
+        </section>
+
+        <section id="backend-reuse">
+            <h2>2. Code Reuse Strategy</h2>
+            <div class="strategy-box">
+                <p><strong>The Strategy:</strong> Use a shared <code>ReturnService</code> that handles the state machine (status transitions) and inventory logic, while delegating entity-specific tasks (Financials) to sub-handlers.</p>
+            </div>
+
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <h3 style="margin-top: 0;">Customer (RMA) Logic</h3>
+                    <ul>
+                        <li>Restocks inventory (Warehouse IN)</li>
+                        <li>Triggers payment gateway refund</li>
+                        <li>Links to original Sales Order</li>
+                        <li>Affects Customer Loyalty points</li>
+                    </ul>
+                </div>
+                <div class="comparison-card">
+                    <h3 style="margin-top: 0;">Vendor Return Logic</h3>
+                    <ul>
+                        <li>Decrements inventory (Warehouse OUT)</li>
+                        <li>Generates a Supplier Credit Note</li>
+                        <li>Links to original Purchase Order</li>
+                        <li>Affects Supplier Rating</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Shared Controller Pattern</h3>
+            <p>Instead of separate controllers, use a unified endpoint with a type parameter to reduce boilerplate.</p>
+            <pre><code><span class="comment">// Example pseudo-code for a unified handler</span>
+<span class="keyword">async function</span> <span class="function">handleReturnCreation</span>(payload) {
+    <span class="comment">// 1. Shared Validation (Qty checks, valid ProductId)</span>
+    <span class="function">validateGenericReturnData</span>(payload);
+
+    <span class="comment">// 2. Entity Specific Stock Logic</span>
+    <span class="keyword">if</span> (payload.type === <span class="string">'Vendor'</span>) {
+        <span class="keyword">await</span> <span class="property">inventoryService</span>.<span class="function">decrementStock</span>(payload.items);
+    } <span class="keyword">else</span> {
+        <span class="keyword">await</span> <span class="property">inventoryService</span>.<span class="function">prepareForRestock</span>(payload.items);
+    }
+
+    <span class="comment">// 3. Shared Persistence</span>
+    <span class="keyword">return await</span> <span class="property">db</span>.<span class="property">ReturnMaster</span>.<span class="function">create</span>(payload);
+}</code></pre>
+        </section>
+
+        <section id="api-endpoints">
+            <h2>3. Backend API Specification</h2>
+
+            <article>
+                <h3>Create Vendor Return</h3>
+                <div class="endpoint-meta">
+                    <span class="method-POST">POST</span>
+                    <span class="path">/api/warehouse-management/returns/vendor/create</span>
+                </div>
+                <p>Initiates a return to a supplier. This endpoint reuse the same validation middleware as the customer RMA endpoint.</p>
+                <h4>Request Payload</h4>
+                <pre><code>{
+    <span class="key">"supplierId"</span>: <span class="number">105</span>,
+    <span class="key">"purchaseOrderId"</span>: <span class="string">"PO-2025-001"</span>,
+    <span class="key">"reason"</span>: <span class="string">"Damaged on arrival"</span>,
+    <span class="key">"status"</span>: <span class="string">"Pending"</span>,
+    <span class="key">"items"</span>: [
+        { <span class="key">"productId"</span>: <span class="number">12</span>, <span class="key">"quantity"</span>: <span class="number">5</span>, <span class="key">"unitCost"</span>: <span class="number">450.00</span> }
+    ],
+    <span class="key">"notes"</span>: <span class="string">"Batch #882 expired"</span>
+}</code></pre>
+            </article>
+
+            <article>
+                <h3>Get Returns List</h3>
+                <div class="endpoint-meta">
+                    <span class="method-GET">GET</span>
+                    <span class="path">/api/warehouse-management/returns/{type}/all</span>
+                </div>
+                <p>A single endpoint to fetch either Customer or Vendor returns based on the URL parameter.</p>
+            </article>
+
+            <article>
+                <h3>Update Return Status</h3>
+                <div class="endpoint-meta">
+                    <span class="method-POST">POST</span>
+                    <span class="path">/api/warehouse-management/returns/update-status</span>
+                </div>
+                <p>Used to move returns through the lifecycle. For <strong>Vendor Returns</strong>, moving to "Shipped" automatically triggers inventory deduction.</p>
+                <h4>Request Payload</h4>
+                <pre><code>{
+    <span class="key">"returnId"</span>: <span class="number">502</span>,
+    <span class="key">"status"</span>: <span class="string">"Shipped"</span>
+}</code></pre>
+            </article>
+        </section>
+
+        <section id="summary">
+            <h2>4. Summary of Reuse</h2>
+            <ul>
+                <li><strong>Validation:</strong> Shared Zod/Joi schema for checking product lists and quantities.</li>
+                <li><strong>UI Components:</strong> Use the same "Add Item" table component for both RMA and Vendor Return wizards.</li>
+                <li><strong>Inventory Service:</strong> A single <code>StockMovement</code> table records all changes, whether it's a customer restocking or a vendor return decrementing.</li>
+                <li><strong>Reporting:</strong> Unified valuation reports can pull from <code>ReturnMaster</code> filtering by <code>returnType</code>.</li>
+            </ul>
+        </section>
+    </main>
+</body>
+</html>

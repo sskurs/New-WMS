@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS Application Field Reference</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --required: #ef4444;
+            --ai: #8b5cf6;
+            --sidebar-width: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        nav {
+            width: var(--sidebar-width);
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            height: 100%;
+            overflow-y: auto;
+            position: fixed;
+            padding: 20px;
+        }
+
+        nav h3 {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            margin-top: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        nav h3:first-child { margin-top: 0; }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+
+        nav li {
+            margin-bottom: 2px;
+        }
+
+        nav a {
+            display: block;
+            padding: 8px 12px;
+            color: var(--text);
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: background 0.1s;
+        }
+
+        nav a:hover {
+            background-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 40px 60px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        h1 { margin: 0 0 10px 0; color: #0f172a; }
+        
+        section {
+            margin-bottom: 60px;
+            scroll-margin-top: 40px;
+        }
+
+        h2 { 
+            color: var(--primary); 
+            border-bottom: 2px solid var(--border); 
+            padding-bottom: 10px; 
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            color: #334155;
+            margin-top: 30px;
+            font-size: 1.1rem;
+        }
+
+        .module-intro {
+            color: var(--text-light);
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--white);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+            color: #334155;
+            white-space: nowrap;
+        }
+        
+        th:nth-child(1) { width: 20%; }
+        th:nth-child(2) { width: 15%; }
+        th:nth-child(3) { width: 65%; }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f8fafc; }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            margin-left: 6px;
+            text-transform: uppercase;
+            line-height: 1;
+            vertical-align: middle;
+        }
+
+        .badge-req { background: #fee2e2; color: var(--required); border: 1px solid #fecaca; }
+        .badge-ai { background: #ede9fe; color: var(--ai); border: 1px solid #ddd6fe; }
+        .badge-read { background: #e2e8f0; color: #64748b; border: 1px solid #cbd5e1; }
+        
+        code {
+            background: #f1f5f9;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85em;
+            color: #0f172a;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <h3>Inventory Module</h3>
+    <ul>
+        <li><a href="#product-master">Product Catalog</a></li>
+        <li><a href="#stock-adjustments">Stock Adjustments</a></li>
+    </ul>
+
+    <h3>Order Management</h3>
+    <ul>
+        <li><a href="#customer-orders">Customer Orders</a></li>
+        <li><a href="#returns">Returns (RMA)</a></li>
+    </ul>
+
+    <h3>Procurement</h3>
+    <ul>
+        <li><a href="#suppliers">Supplier Database</a></li>
+        <li><a href="#purchase-orders">Purchase Orders</a></li>
+    </ul>
+
+    <h3>Infrastructure</h3>
+    <ul>
+        <li><a href="#locations">Locations</a></li>
+        <li><a href="#warehouse-config">Warehouse Config</a></li>
+    </ul>
+
+    <h3>Administration</h3>
+    <ul>
+        <li><a href="#users">User Management</a></li>
+        <li><a href="#pricing-rules">Pricing Rules</a></li>
+    </ul>
+</nav>
+
+<main>
+    <div class="header">
+        <h1>WMS Application Field Reference</h1>
+        <p>This document provides a detailed breakdown of all data fields used within the application forms and database schemas.</p>
+        <p>
+            <span class="badge badge-req">Required</span> Mandatory Field &nbsp;
+            <span class="badge badge-ai">AI Powered</span> Field supports AI generation/validation &nbsp;
+            <span class="badge badge-read">Read Only</span> System calculated
+        </p>
+    </div>
+
+    <!-- INVENTORY -->
+    <section id="product-master">
+        <h2>1. Product Catalog</h2>
+        <div class="module-intro">Defines the items managed by the warehouse. Accessible via <em>Inventory > Catalog > Add/Edit</em>.</div>
+
+        <h3>General Information</h3>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Product Name <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>Commercial name. AI validates plausibility on blur. Used for search and display.</td>
+                </tr>
+                <tr>
+                    <td>SKU <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>Stock Keeping Unit. Unique identifier. Can be AI-generated based on Name + Category.</td>
+                </tr>
+                <tr>
+                    <td>Product Code <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>Internal reference code (e.g., PROD-XXXX). Can be AI-generated.</td>
+                </tr>
+                <tr>
+                    <td>Category <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>Dropdown (Reference)</td>
+                    <td>Links to <code>Category</code> master. AI suggests category based on product name.</td>
+                </tr>
+                <tr>
+                    <td>Supplier <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown (Reference)</td>
+                    <td>Primary vendor. Links to <code>Supplier</code> master.</td>
+                </tr>
+                <tr>
+                    <td>Supplier Type</td>
+                    <td>Dropdown</td>
+                    <td>Options: <code>Local</code>, <code>International</code>. Defaults to Local.</td>
+                </tr>
+                <tr>
+                    <td>Brand ID <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>Brand identifier. Can be AI-generated.</td>
+                </tr>
+                <tr>
+                    <td>Label ID <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>Labeling identifier. Can be AI-generated.</td>
+                </tr>
+                <tr>
+                    <td>Description <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>Text Area</td>
+                    <td>Detailed description. AI can generate marketing text based on name/category/price.</td>
+                </tr>
+                <tr>
+                    <td>Product Image</td>
+                    <td>File (Base64)</td>
+                    <td>Product photo. Max size 2MB.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Pricing & Inventory</h3>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Base Price <span class="badge badge-req">Required</span></td>
+                    <td>Decimal</td>
+                    <td>Cost before tax. Must be > 0.</td>
+                </tr>
+                <tr>
+                    <td>GST Percentage</td>
+                    <td>Dropdown (Number)</td>
+                    <td>Tax rate. Options: 0, 5, 12, 18, 28.</td>
+                </tr>
+                <tr>
+                    <td>Final Price <span class="badge badge-read">Read Only</span></td>
+                    <td>Decimal</td>
+                    <td>Calculated as <code>Base Price * (1 + GST/100)</code>.</td>
+                </tr>
+                <tr>
+                    <td>HSN/SAC Code <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>Harmonized System code for taxation.</td>
+                </tr>
+                <tr>
+                    <td>Pricing Rule</td>
+                    <td>Dropdown (Reference)</td>
+                    <td>Links to <code>PricingRule</code> master for dynamic discounts.</td>
+                </tr>
+                <tr>
+                    <td>Unit of Measure</td>
+                    <td>Dropdown</td>
+                    <td>Stock keeping unit type (e.g., PCS, KG, Box).</td>
+                </tr>
+                <tr>
+                    <td>Pack Size</td>
+                    <td>Number</td>
+                    <td>Quantity per unit (e.g., 12 for a Dozen). Default 1.</td>
+                </tr>
+                <tr>
+                    <td>Reorder Point <span class="badge badge-req">Required</span></td>
+                    <td>Number</td>
+                    <td>Minimum stock threshold triggering low stock alerts.</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h3>Packaging & Variants</h3>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                 <tr>
+                    <td>Packaging Type <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown</td>
+                    <td>e.g., Primary, Secondary, Tertiary.</td>
+                </tr>
+                <tr>
+                    <td>Materials Used</td>
+                    <td>Checkbox List</td>
+                    <td>e.g., Cardboard, Plastic, Foam.</td>
+                </tr>
+                <tr>
+                    <td>Handling</td>
+                    <td>Dropdown</td>
+                    <td>Storage environment (Standard, Refrigerated, etc.). Used for AI location suggestions.</td>
+                </tr>
+                <tr>
+                    <td>Shelf Life <span class="badge badge-req">Required</span></td>
+                    <td>Number (Days)</td>
+                    <td>Days until expiration.</td>
+                </tr>
+                <tr>
+                    <td>Variants</td>
+                    <td>Key-Value List</td>
+                    <td>Custom attributes (e.g., Color: Red, Size: XL).</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="stock-adjustments">
+        <h2>2. Stock Adjustments</h2>
+        <div class="module-intro">Used to manually correct inventory levels. Accessible via <em>Inventory > Adjustments > New</em>.</div>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Mode</td>
+                    <td>Radio</td>
+                    <td><code>Quantity</code> (adjust by unit count) or <code>Value</code> (adjust by total monetary value).</td>
+                </tr>
+                <tr>
+                    <td>Product <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown (Reference)</td>
+                    <td>Item to adjust.</td>
+                </tr>
+                <tr>
+                    <td>Location <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown (Reference)</td>
+                    <td>Physical location of stock (Bin/Shelf or Receiving Dock).</td>
+                </tr>
+                <tr>
+                    <td>Adjustment Type <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown</td>
+                    <td><code>Increase</code> (Found stock) or <code>Decrease</code> (Damage/Loss/Theft).</td>
+                </tr>
+                <tr>
+                    <td>Quantity <span class="badge badge-req">Required</span></td>
+                    <td>Number</td>
+                    <td>Amount to adjust. Must be > 0. If decreasing, cannot exceed current stock.</td>
+                </tr>
+                 <tr>
+                    <td>Adjustment Value</td>
+                    <td>Number</td>
+                    <td>If Mode is 'Value', input total currency amount. System calculates equivalent unit quantity.</td>
+                </tr>
+                <tr>
+                    <td>Reason</td>
+                    <td>Dropdown</td>
+                    <td>Audit reason (e.g., "Damaged goods", "Stocktaking results").</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ORDER MANAGEMENT -->
+    <section id="customer-orders">
+        <h2>3. Customer Orders</h2>
+        <div class="module-intro">Sales orders to be fulfilled. Accessible via <em>Orders > Processing > New</em>.</div>
+        
+        <h3>Header Details</h3>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Customer Name <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>AI validated for name plausibility.</td>
+                </tr>
+                <tr>
+                    <td>Email Address</td>
+                    <td>String</td>
+                    <td>Format validation required (email@domain.com).</td>
+                </tr>
+                <tr>
+                    <td>Phone Number</td>
+                    <td>String</td>
+                    <td>Must be exactly 10 digits (numeric).</td>
+                </tr>
+                <tr>
+                    <td>Priority</td>
+                    <td>Dropdown</td>
+                    <td><code>High</code>, <code>Medium</code>, <code>Low</code>. Affects sorting in workflow.</td>
+                </tr>
+                <tr>
+                    <td>Notes</td>
+                    <td>Text Area</td>
+                    <td>Internal instructions or customer remarks.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Shipping Address</h3>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Address Line 1 <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>Street address/House number.</td>
+                </tr>
+                <tr>
+                    <td>Address Line 2 <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>Apartment, Suite, Unit, etc.</td>
+                </tr>
+                <tr>
+                    <td>State <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown</td>
+                    <td>List of Indian States.</td>
+                </tr>
+                <tr>
+                    <td>City <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown</td>
+                    <td>Filtered based on selected State.</td>
+                </tr>
+                <tr>
+                    <td>Zip Code <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>Must be 6 digits.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>Order Items</h3>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Product <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown (Reference)</td>
+                    <td>Selected from catalog. Displays available stock.</td>
+                </tr>
+                <tr>
+                    <td>Quantity <span class="badge badge-req">Required</span></td>
+                    <td>Number</td>
+                    <td>Must be > 0. Cannot exceed <code>Available Stock</code>.</td>
+                </tr>
+                <tr>
+                    <td>Unit Price <span class="badge badge-read">Read Only</span></td>
+                    <td>Decimal</td>
+                    <td>Auto-filled from Product. Applies <code>PricingRules</code> if applicable.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="returns">
+        <h2>4. Returns (RMA)</h2>
+        <div class="module-intro">Return Merchandise Authorization. Accessible via <em>Orders > Returns > New</em>.</div>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Order ID</td>
+                    <td>Search / Select</td>
+                    <td>Must select an existing Order with status <code>Shipped</code> or <code>Completed</code>.</td>
+                </tr>
+                <tr>
+                    <td>Items to Return <span class="badge badge-req">Required</span></td>
+                    <td>Selection List</td>
+                    <td>User selects specific items and quantity from the original order. Max qty = Original qty - Already returned.</td>
+                </tr>
+                <tr>
+                    <td>Reason <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown</td>
+                    <td>e.g., "Defective Product", "Wrong Item".</td>
+                </tr>
+                <tr>
+                    <td>Resolution <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown</td>
+                    <td>e.g., "Full Refund", "Exchange".</td>
+                </tr>
+                <tr>
+                    <td>Contact Phone</td>
+                    <td>String</td>
+                    <td>10-digit validation. Pre-filled from original order.</td>
+                </tr>
+                <tr>
+                    <td>Photo</td>
+                    <td>File (Base64)</td>
+                    <td>Evidence of damage/condition.</td>
+                </tr>
+                <tr>
+                    <td>Detailed Description</td>
+                    <td>Text Area</td>
+                    <td>Additional context for the return.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- PROCUREMENT -->
+    <section id="suppliers">
+        <h2>5. Supplier Database</h2>
+        <div class="module-intro">Vendors for inbound stock. Accessible via <em>Supplier Order > Suppliers > Add</em>.</div>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Supplier Name <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>Company name. AI validated.</td>
+                </tr>
+                <tr>
+                    <td>Contact Person <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>Name of representative. AI validated.</td>
+                </tr>
+                <tr>
+                    <td>Phone <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>10-digit validation.</td>
+                </tr>
+                <tr>
+                    <td>Email <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>Email format validation.</td>
+                </tr>
+                <tr>
+                    <td>Address Fields</td>
+                    <td>String / Dropdown</td>
+                    <td>Country (India), State, City, Zip (6 digits), Address Line.</td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>Dropdown</td>
+                    <td><code>Active</code> or <code>Inactive</code>. Inactive suppliers are hidden in PO creation.</td>
+                </tr>
+                <tr>
+                    <td>Rating</td>
+                    <td>Slider (1-5)</td>
+                    <td>Internal vendor rating.</td>
+                </tr>
+                 <tr>
+                    <td>Website</td>
+                    <td>String</td>
+                    <td>Optional URL.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="purchase-orders">
+        <h2>6. Purchase Orders</h2>
+        <div class="module-intro">Orders sent to suppliers. Accessible via <em>Supplier Order > Purchase Orders > Create</em>.</div>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Supplier <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown (Reference)</td>
+                    <td>Filters product list to items linked to this supplier.</td>
+                </tr>
+                <tr>
+                    <td>Product <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown (Reference)</td>
+                    <td>Items offered by selected supplier.</td>
+                </tr>
+                <tr>
+                    <td>Quantity <span class="badge badge-req">Required</span></td>
+                    <td>Number</td>
+                    <td>Must be > 0.</td>
+                </tr>
+                <tr>
+                    <td>Cost/Unit</td>
+                    <td>Decimal</td>
+                    <td>Auto-filled from supplier price list, editable.</td>
+                </tr>
+                <tr>
+                    <td>Status <span class="badge badge-read">Read Only</span></td>
+                    <td>String</td>
+                    <td>Lifecycle: <code>Draft</code> -> <code>Issued</code> -> <code>Partially Received</code> -> <code>Received</code>.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- INFRASTRUCTURE -->
+    <section id="locations">
+        <h2>7. Location Management</h2>
+        <div class="module-intro">Physical storage spots. Accessible via <em>Locations > Add Location</em>.</div>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Warehouse <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown</td>
+                    <td>Parent facility.</td>
+                </tr>
+                <tr>
+                    <td>Zone <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown</td>
+                    <td>Logical area (e.g., Zone A).</td>
+                </tr>
+                <tr>
+                    <td>Code <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>Unique ID (e.g., A1-R1-S2). Can be AI-generated based on warehouse/zone.</td>
+                </tr>
+                <tr>
+                    <td>Name <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>Descriptive name. Can be AI-generated from Code.</td>
+                </tr>
+                <tr>
+                    <td>Type</td>
+                    <td>Dropdown</td>
+                    <td><code>Aisle</code>, <code>Rack</code>, <code>Shelf</code>, <code>Bin</code>.</td>
+                </tr>
+                <tr>
+                    <td>Capacity</td>
+                    <td>Number</td>
+                    <td>Max units allowed. Required for bins/shelves.</td>
+                </tr>
+                 <tr>
+                    <td>Status</td>
+                    <td>Dropdown</td>
+                    <td><code>Available</code>, <code>Occupied</code>, <code>Reserved</code>, <code>Maintenance</code>.</td>
+                </tr>
+                <tr>
+                    <td>Address</td>
+                    <td>Text Area</td>
+                    <td>Used for geocoding.</td>
+                </tr>
+                <tr>
+                    <td>Lat/Long <span class="badge badge-ai">AI</span></td>
+                    <td>Number</td>
+                    <td>Geographic coordinates. AI fetches from Address.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="warehouse-config">
+        <h2>8. Warehouse Configuration</h2>
+        <div class="module-intro">High-level facility settings. Accessible via <em>Configure > Warehouse > New</em>.</div>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Name <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>Facility identifier.</td>
+                </tr>
+                <tr>
+                    <td>Type <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown</td>
+                    <td>e.g., <code>Distribution Center</code>, <code>Fulfillment Center</code>.</td>
+                </tr>
+                <tr>
+                    <td>Phone <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>10-digit validation.</td>
+                </tr>
+                <tr>
+                    <td>Address Fields</td>
+                    <td>String / Dropdown</td>
+                    <td>Line 1, Line 2, State, City, PIN (6 digits).</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- ADMINISTRATION -->
+    <section id="users">
+        <h2>9. User Management</h2>
+        <div class="module-intro">System access control. Accessible via <em>Users > Add User</em>.</div>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Username <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>Login ID.</td>
+                </tr>
+                <tr>
+                    <td>Role <span class="badge badge-req">Required</span></td>
+                    <td>Dropdown</td>
+                    <td><code>Admin</code>, <code>Warehouse Manager</code>, <code>Picker</code>, <code>Receiver</code>, <code>Analyst</code>.</td>
+                </tr>
+                 <tr>
+                    <td>Password</td>
+                    <td>Password</td>
+                    <td>Required on creation. Validated for match with Confirm Password.</td>
+                </tr>
+                <tr>
+                    <td>Full Name <span class="badge badge-req">Required</span> <span class="badge badge-ai">AI</span></td>
+                    <td>String</td>
+                    <td>AI validated.</td>
+                </tr>
+                <tr>
+                    <td>Official Email <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>Format validation.</td>
+                </tr>
+                <tr>
+                    <td>Personal Email</td>
+                    <td>String</td>
+                    <td>Format validation.</td>
+                </tr>
+                <tr>
+                    <td>Date of Joining <span class="badge badge-req">Required</span></td>
+                    <td>Date</td>
+                    <td>Cannot be in the future.</td>
+                </tr>
+                <tr>
+                    <td>Contact No <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>10-digit validation.</td>
+                </tr>
+                <tr>
+                    <td>Salutation</td>
+                    <td>Dropdown</td>
+                    <td>Mr., Mrs., Ms., Dr.</td>
+                </tr>
+                 <tr>
+                    <td>Gender</td>
+                    <td>Dropdown</td>
+                    <td>Male, Female, Other.</td>
+                </tr>
+                 <tr>
+                    <td>Remarks</td>
+                    <td>Text Area</td>
+                    <td>Internal notes.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section id="pricing-rules">
+        <h2>10. Pricing Rules</h2>
+        <div class="module-intro">Dynamic pricing logic. Accessible via <em>Configure > Master Data > Pricing Rules > Add</em>.</div>
+        <table>
+            <thead><tr><th>Field Name</th><th>Data Type</th><th>Details & Business Rules</th></tr></thead>
+            <tbody>
+                <tr>
+                    <td>Rule Name <span class="badge badge-req">Required</span></td>
+                    <td>String</td>
+                    <td>Identifier (e.g., "Bulk Discount").</td>
+                </tr>
+                 <tr>
+                    <td>Description</td>
+                    <td>Text Area</td>
+                    <td>Optional description.</td>
+                </tr>
+                <tr>
+                    <td>Priority</td>
+                    <td>Dropdown</td>
+                    <td><code>High</code>, <code>Medium</code>, <code>Low</code>. Determines execution order.</td>
+                </tr>
+                <tr>
+                    <td>Quantity Limits</td>
+                    <td>Number</td>
+                    <td>Min Qty / Max Qty conditions for rule to apply.</td>
+                </tr>
+                <tr>
+                    <td>Date Range</td>
+                    <td>Date</td>
+                    <td>Start and End dates for validity. Start date cannot be past for new rules.</td>
+                </tr>
+                <tr>
+                    <td>Action Type</td>
+                    <td>Dropdown</td>
+                    <td><code>Percentage Discount</code>, <code>Fixed Price</code>, <code>Percentage Markup</code>.</td>
+                </tr>
+                <tr>
+                    <td>Action Value</td>
+                    <td>Number</td>
+                    <td>The discount %, fixed amount, or markup %. Must be > 0.</td>
+                </tr>
+                <tr>
+                    <td>Status</td>
+                    <td>Toggle</td>
+                    <td>Active / Inactive.</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+</main>
+
+</body>
+</html>

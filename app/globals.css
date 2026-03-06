@@ -1,0 +1,301 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  :root {
+    --background: 210 20% 98%;
+    --foreground: 224 71.4% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+
+    --header-background: 222 47.4% 11.2%;
+    --header-foreground: 210 40% 98%;
+    --sidebar-background: 222 47.4% 11.2%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-header-background: 222 47.4% 11.2%;
+    --sidebar-header-foreground: 210 40% 98%;
+
+    /* Custom semantic colors for headers */
+    --color-red: #b81808;
+    --color-yellow: #be7800;
+    --color-blue: #0c66cc;
+    --color-magenta: #cc1250;
+    --color-green: #408000;
+  }
+ 
+  .dark {
+    --background: 222 47% 8%;
+    --foreground: 210 40% 98%;
+    --card: 222 47.4% 11.2%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47.4% 11.2%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 217.2 91.2% 59.8%;
+
+    --header-background: 222 47.4% 11.2%;
+    --header-foreground: 210 40% 98%;
+    --sidebar-background: 222 47.4% 11.2%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-header-background: 222 47.4% 11.2%;
+    --sidebar-header-foreground: 210 40% 98%;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Unified Header Styling: H5 size, Small Caps, in a Bar */
+  :is(h1, h2, h3, h4, h5, h6) {
+    font-size: 0.875rem; /* H5 typical size */
+    line-height: 1.25rem;
+    font-weight: 700;
+    font-variant: small-caps;
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(to right, hsl(var(--muted) / 0.4), transparent);
+    border-left: 4px solid hsl(var(--primary));
+    border-radius: 0 4px 4px 0;
+    display: block;
+    width: 100%;
+  }
+
+  /* Semantic overrides for different header levels */
+  h2 { border-left-color: var(--color-red); color: var(--color-red); }
+  h3 { border-left-color: var(--color-yellow); color: var(--color-yellow); }
+  h4 { border-left-color: var(--color-blue); color: var(--color-blue); }
+  h5 { border-left-color: var(--color-magenta); color: var(--color-magenta); }
+  h6 { border-left-color: var(--color-green); color: var(--color-green); }
+
+  /* Allow overriding the bar style for specific cases (like main titles) */
+  .no-bar {
+    background: transparent !important;
+    border-left: none !important;
+    padding: 0 !important;
+    font-variant: normal !important;
+  }
+}
+
+@layer utilities {
+  /* Custom scrollbar */
+  .sidebar-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  .sidebar-scrollbar:hover {
+    scrollbar-color: hsl(var(--muted-foreground) / 0.5) transparent;
+  }
+  .sidebar-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .sidebar-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .sidebar-scrollbar::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 10px;
+    transition: background-color 0.2s ease-in-out;
+  }
+  .sidebar-scrollbar:hover::-webkit-scrollbar-thumb {
+     background-color: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* User Guide Highlighter */
+  .guide-highlight {
+    position: absolute;
+    border-radius: var(--radius);
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+    border: 2px solid hsl(var(--primary));
+    pointer-events: none;
+    z-index: 9998;
+  }
+
+  .guide-popover {
+    position: absolute;
+    z-index: 9999;
+    transition: all 0.3s ease-in-out;
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  .guide-popover.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Animation Utilities */
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: .5;
+    }
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Neutral Slate Pulse Animation for skeleton loaders */
+  @keyframes pulse-slate {
+    0%, 100% {
+      opacity: 1;
+      background-color: rgb(203 213 225); /* slate-300 */
+    }
+    50% {
+      opacity: .5;
+      background-color: rgb(226 232 240); /* slate-200 */
+    }
+  }
+
+  @keyframes pulse-slate-dark {
+    0%, 100% {
+      opacity: 1;
+      background-color: rgb(51 65 85); /* slate-700 */
+    }
+    50% {
+      opacity: .5;
+      background-color: rgb(30 41 59); /* slate-800 */
+    }
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-spin {
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    color: rgb(39 39 42); /* zinc-800 */
+  }
+
+  .dark .animate-spin {
+    color: rgb(212 212 216); /* zinc-300 */
+  }
+
+  .skeleton-green {
+    animation: pulse-slate 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    @apply rounded-md;
+  }
+
+  .dark .skeleton-green {
+    animation: pulse-slate-dark 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slide-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slide-in-from-bottom { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes shrink-width {
+    from { width: 100%; }
+    to { width: 0%; }
+  }
+
+  /* Print Styles for QR Code Modal & Reports */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+    .printable-area, .printable-area * {
+      visibility: visible;
+    }
+    .printable-area {
+      width: 100%;
+      padding: 1rem;
+      box-sizing: border-box;
+    }
+    .no-print, .no-print * {
+      display: none !important;
+    }
+    
+    /* General cleanup for printing reports */
+    @page {
+      size: auto;
+      margin: 0.5in;
+    }
+
+    .printable-area {
+      background: #fff !important;
+      color: #000 !important;
+    }
+
+    /* Reset card and background styles */
+    .printable-area [class*="bg-"],
+    .printable-area [class*="dark:bg-"] {
+      background-color: transparent !important;
+    }
+    .printable-area [class*="shadow"] {
+      box-shadow: none !important;
+    }
+    .printable-area [class*="border"] {
+      border-color: #ccc !important;
+    }
+
+    /* Reset text colors */
+    .printable-area *, .printable-area p, .printable-area h1, .printable-area h2, .printable-area h3, .printable-area span, .printable-area div {
+      color: #000 !important;
+    }
+    .printable-area .text-muted-foreground {
+      color: #555 !important;
+    }
+
+    /* Table specific styles */
+    .printable-area th {
+      background-color: #f2f2f2 !important;
+    }
+    
+    .printable-area .text-green-500, .printable-area .text-emerald-500 { color: #006400 !important; }
+    .printable-area .text-red-500, .printable-area .text-rose-500 { color: #dc2626 !important; }
+    .printable-area .text-amber-500 { color: #d97706 !important; }
+    .printable-area .text-orange-600 { color: #ea580c !important; }
+    .printable-area .text-sky-500 { color: #0ea5e9 !important; }
+    .printable-area .text-violet-500 { color: #8b5cf6 !important; }
+  }
+
+  /* Custom styles for vyrn toaster to make message bigger */
+  [data-vyrn-toast] [data-description] {
+    @apply text-base leading-relaxed;
+  }
+}

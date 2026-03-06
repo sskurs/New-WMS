@@ -1,0 +1,78 @@
+[debug] [2026-03-06T11:44:46.683Z] ----------------------------------------------------------------------
+[debug] [2026-03-06T11:44:46.693Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\senthilkumar\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2026-03-06T11:44:46.694Z] CLI Version:   15.9.0
+[debug] [2026-03-06T11:44:46.695Z] Platform:      win32
+[debug] [2026-03-06T11:44:46.695Z] Node Version:  v22.17.1
+[debug] [2026-03-06T11:44:46.695Z] Time:          Fri Mar 06 2026 17:14:46 GMT+0530 (India Standard Time)
+[debug] [2026-03-06T11:44:46.696Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  D:\deploy\wms-06-03-2026\wms-catalyst-alpha (6)
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-03-06T11:45:11.166Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-06T11:45:11.167Z] > authorizing via signed-in user (sskur1972@gmail.com)
+[debug] [2026-03-06T11:45:11.171Z] Checked if tokens are valid: true, expires at: 1772800463226
+[debug] [2026-03-06T11:45:11.171Z] Checked if tokens are valid: true, expires at: 1772800463226
+[debug] [2026-03-06T11:45:11.175Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/wms-frontend-1f3f1 [none]
+[debug] [2026-03-06T11:45:11.922Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/wms-frontend-1f3f1 403
+[debug] [2026-03-06T11:45:11.922Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/wms-frontend-1f3f1 {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-06T11:45:11.924Z] Request to https://firebase.googleapis.com/v1beta1/projects/wms-frontend-1f3f1 had HTTP Error: 403, The caller does not have permission
+[debug] [2026-03-06T11:45:12.209Z] FirebaseError: Request to https://firebase.googleapis.com/v1beta1/projects/wms-frontend-1f3f1 had HTTP Error: 403, The caller does not have permission
+    at responseToError (C:\Users\senthilkumar\AppData\Roaming\npm\node_modules\firebase-tools\lib\responseToError.js:53:12)
+    at RetryOperation._fn (C:\Users\senthilkumar\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:333:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[error] 
+[error] Error: Failed to get Firebase project wms-frontend-1f3f1. Please make sure the project exists and your account has permission to access it.
+[debug] [2026-03-06T11:48:49.445Z] ----------------------------------------------------------------------
+[debug] [2026-03-06T11:48:49.450Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\senthilkumar\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2026-03-06T11:48:49.451Z] CLI Version:   15.9.0
+[debug] [2026-03-06T11:48:49.451Z] Platform:      win32
+[debug] [2026-03-06T11:48:49.451Z] Node Version:  v22.17.1
+[debug] [2026-03-06T11:48:49.451Z] Time:          Fri Mar 06 2026 17:18:49 GMT+0530 (India Standard Time)
+[debug] [2026-03-06T11:48:49.452Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  D:\deploy\wms-06-03-2026\wms-catalyst-alpha (6)
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-03-06T11:49:00.277Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-03-06T11:49:00.278Z] > authorizing via signed-in user (sskur1972@gmail.com)
+[debug] [2026-03-06T11:49:00.280Z] Checked if tokens are valid: true, expires at: 1772800463226
+[debug] [2026-03-06T11:49:00.280Z] Checked if tokens are valid: true, expires at: 1772800463226
+[debug] [2026-03-06T11:49:00.282Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/wms-frontend-1f3f1 [none]
+[debug] [2026-03-06T11:49:00.922Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/wms-frontend-1f3f1 403
+[debug] [2026-03-06T11:49:00.922Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/wms-frontend-1f3f1 {"error":{"code":403,"message":"The caller does not have permission","status":"PERMISSION_DENIED"}}
+[debug] [2026-03-06T11:49:00.923Z] Request to https://firebase.googleapis.com/v1beta1/projects/wms-frontend-1f3f1 had HTTP Error: 403, The caller does not have permission
+[debug] [2026-03-06T11:49:01.282Z] FirebaseError: Request to https://firebase.googleapis.com/v1beta1/projects/wms-frontend-1f3f1 had HTTP Error: 403, The caller does not have permission
+    at responseToError (C:\Users\senthilkumar\AppData\Roaming\npm\node_modules\firebase-tools\lib\responseToError.js:53:12)
+    at RetryOperation._fn (C:\Users\senthilkumar\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:333:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[error] 
+[error] Error: Failed to get Firebase project wms-frontend-1f3f1. Please make sure the project exists and your account has permission to access it.

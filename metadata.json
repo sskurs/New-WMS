@@ -1,0 +1,8 @@
+{
+  "name": "WMS-CATALYST-ALPHA",
+  "description": "A comprehensive Warehouse Management System (WMS) from Propix Technologies Pvt. Ltd. to handle inventory and warehouse operations efficiently. This application provides tools for product cataloging, real-time stock tracking, inbound and outbound logistics, and inventory audits.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "prompt": ""
+}

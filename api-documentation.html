@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMSPro API Documentation</title>
+    <style>
+        :root {
+            --bg-color: #1a1b26;
+            --sidebar-bg: #16161e;
+            --content-bg: #1a1b26;
+            --text-color: #a9b1d6;
+            --header-color: #c0caf5;
+            --link-color: #7aa2f7;
+            --link-hover-color: #b4c8f0;
+            --code-bg: #1e202e;
+            --border-color: #3b4261;
+            --highlight-bg: #292e42;
+            --comment-color: #565f89;
+            --key-color: #7dcfff;
+            --string-color: #9ece6a;
+            --number-color: #ff9e64;
+            --boolean-color: #bb9af7;
+            --null-color: #f7768e;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+            padding: 1.5rem;
+            box-sizing: border-box;
+        }
+        .sidebar-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--header-color);
+            margin-bottom: 2rem;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .sidebar > ul > li > button {
+            font-weight: bold;
+            font-size: 1rem;
+            width: 100%;
+            text-align: left;
+            background: none;
+            border: none;
+            color: var(--header-color);
+            padding: 0.5rem 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar .sub-menu {
+            padding-left: 1rem;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .sidebar .sub-menu.open {
+            max-height: 500px; /* Adjust as needed */
+        }
+        .sidebar .sub-menu li a {
+            display: block;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+            border-left: 2px solid transparent;
+            padding-left: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        .sidebar .sub-menu li a:hover {
+            color: var(--link-hover-color);
+        }
+        .sidebar .sub-menu li a.active {
+            color: var(--link-color);
+            border-left-color: var(--link-color);
+            font-weight: 500;
+        }
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem 3rem;
+            width: calc(100% - 280px);
+            box-sizing: border-box;
+        }
+        h1, h2, h3 {
+            color: var(--header-color);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        h1 { font-size: 2.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { font-size: 2rem; margin-top: 4rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.5rem; color: var(--link-color); }
+        p, .endpoint-meta { margin-bottom: 1rem; }
+        .endpoint-meta span {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-family: "Fira Code", "Consolas", monospace;
+            font-size: 0.9em;
+            margin-right: 0.5rem;
+        }
+        .endpoint-meta .method-POST { background-color: #49cc90; color: #fff; font-weight: bold; }
+        .endpoint-meta .method-GET { background-color: #61affe; color: #fff; font-weight: bold; }
+        .endpoint-meta .method-PUT { background-color: #fca130; color: #fff; font-weight: bold; }
+        .endpoint-meta .method-DELETE { background-color: #f93e3e; color: #fff; font-weight: bold; }
+        .endpoint-meta .path { background-color: var(--highlight-bg); color: var(--text-color); }
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: "Fira Code", "Consolas", "Monaco", monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        code .comment { color: var(--comment-color); }
+        code .key { color: var(--key-color); }
+        code .string { color: var(--string-color); }
+        code .number { color: var(--number-color); }
+        code .boolean { color: var(--boolean-color); }
+        code .null { color: var(--null-color); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--sidebar-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-header">WMSPro API</div>
+        <nav>
+            <ul id="sidebar-nav">
+                <!-- Navigation items will be injected by JS -->
+            </ul>
+        </nav>
+    </aside>
+
+    <main class="main-content">
+        <h1>API Documentation</h1>
+        <p>This document provides detailed information about the API endpoints for the WMSPro application. Use the sidebar to navigate to a specific module.</p>
+        
+        <div id="content-sections"></div>
+
+    </main>
+    <script>
+        const apiData = {
+            "Authentication": {
+                "Login": {
+                    method: 'POST',
+                    path: '/authentication/Auth/Login',
+                    description: 'Authenticates a user and returns a JWT token along with user data.',
+                    payload: `{\n    <span class="key">"username"</span>: <span class="string">"admin@propixtech.com"</span>,\n    <span class="key">"password"</span>: <span class="string">"Propix@123"</span>\n}`
+                }
+            },
+            "Inventory": {
+                "Get All Products": {
+                    method: 'GET',
+                    path: '/Product/getAll',
+                    description: 'Retrieves a list of all products. The API often returns data in a nested and/or stringified format which is parsed by the frontend.',
+                    payload: `// No payload required for GET request`
+                },
+                "Create Product": {
+                    method: 'POST',
+                    path: '/Product/Create',
+                    description: 'Creates a new product. Note: The payload is a single complex object, not stringified JSON.',
+                    payload: `{\n    <span class="key">"productName"</span>: <span class="string">"Quantum SSD"</span>,\n    <span class="key">"sku"</span>: <span class="string">"ELEC-QUA-482"</span>, <span class="comment">// Example</span>\n    <span class="key">"categoryId"</span>: <span class="number">1</span>, <span class="comment">// Numeric ID</span>\n    <span class="key">"supplierId"</span>: <span class="number">1</span>, <span class="comment">// Numeric ID</span>\n    <span class="key">"price"</span>: <span class="number">120.50</span>,\n    <span class="key">"reorderPoint"</span>: <span class="number">20</span>,\n    <span class="key">"variants"</span>: [<span class="comment">{...}</span>],\n    <span class="key">"packaging"</span>: <span class="comment">{...}</span>,\n    <span class="key">"createdBy"</span>: <span class="number">1</span> <span class="comment">// Numeric User ID</span>\n}`
+                },
+                "Update Product": {
+                    method: 'POST',
+                    path: '/Product/update',
+                    description: 'Updates an existing product. Requires the product\'s numeric `productId`.',
+                    payload: `{\n    <span class="key">"productId"</span>: <span class="number">101</span>,\n    <span class="key">"productName"</span>: <span class="string">"Quantum SSD (Updated)"</span>,\n    <span class="key">"price"</span>: <span class="number">115.00</span>,\n    <span class="key">"updatedBy"</span>: <span class="number">1</span> <span class="comment">// Numeric User ID</span>\n    <span class="comment">// ... other fields to update</span>\n}`
+                },
+                "Delete Product": {
+                    method: 'DELETE',
+                    path: '/Product/delete',
+                    description: 'Deletes a product by its ID. Payload includes both `productId` and `userId`.',
+                    payload: `{\n    <span class="key">"productId"</span>: <span class="number">101</span>, <span class="comment">// Numeric ID</span>\n    <span class="key">"userId"</span>: <span class="number">1</span> <span class="comment">// Numeric User ID of deleter</span>\n}`
+                },
+                "Get Stock Levels": {
+                    method: 'POST',
+                    path: '/stock-management/stock-details/get-all',
+                    description: 'Retrieves current stock levels for all products across all locations.',
+                    payload: `{}`
+                },
+                "Get Stock Adjustments": {
+                    method: 'GET',
+                    path: '/StockAdjustment',
+                    description: 'Retrieves a history of all stock adjustments.',
+                    payload: `// No payload required`
+                },
+                "Create Stock Adjustment": {
+                    method: 'POST',
+                    path: '/StockAdjustment/Create',
+                    description: 'Creates a record of a stock adjustment (increase or decrease).',
+                    payload: `{\n    <span class="key">"productId"</span>: <span class="string">"p1"</span>,\n    <span class="key">"quantity"</span>: <span class="number">5</span>,\n    <span class="key">"reason"</span>: <span class="string">"Damaged goods"</span>,\n    <span class="key">"type"</span>: <span class="string">"Decrease"</span>,\n    <span class="key">"userId"</span>: <span class="number">1</span>\n}`
+                }
+            },
+            "Locations": {
+                "Get All Locations": {
+                    method: 'POST',
+                    path: '/warehouse-management/location/get-all',
+                    description: 'Retrieves all locations (bins, shelves, etc.).',
+                    payload: `{}`
+                },
+                "Get Location by ID": {
+                    method: 'POST',
+                    path: '/warehouse-management/location/get-by-id',
+                    description: 'Fetches details for a single location.',
+                    payload: `{\n    <span class="key">"pkLocationId"</span>: <span class="number">56</span>\n}`
+                },
+                "Get All Zones": {
+                    method: 'POST',
+                    path: '/warehouse-management/zone/get-all',
+                    description: 'Retrieves all defined zones.',
+                    payload: `{}`
+                },
+                "Create Location": {
+                    method: 'POST',
+                    path: '/warehouse-management/location/create',
+                    description: 'Creates a new storage location.',
+                    payload: `{\n    <span class="key">"code"</span>: <span class="string">"A1-R2-S3-B4"</span>,\n    <span class="key">"locationName"</span>: <span class="string">"Bin B4"</span>,\n    <span class="key">"locationType"</span>: <span class="string">"Bin"</span>,\n    <span class="key">"fkWarehouseId"</span>: <span class="number">1000</span>\n}`
+                },
+                "Create Zone": {
+                    method: 'POST',
+                    path: '/warehouse-management/zone/create',
+                    description: 'Creates a new zone within a warehouse.',
+                    payload: `{\n    <span class="key">"fkLocationId"</span>: <span class="string">"1000"</span>, <span class="comment">// This is the Warehouse ID</span>\n    <span class="key">"zoneName"</span>: <span class="string">"Zone C - High Turnover"</span>\n}`
+                },
+                "Update Location": {
+                    method: 'PUT',
+                    path: '/warehouse-management/location/update',
+                    description: 'Updates an existing location.',
+                    payload: `{\n    <span class="key">"pkLocationId"</span>: <span class="number">56</span>,\n    <span class="key">"locationName"</span>: <span class="string">"Bin B4 (Updated)"</span>\n}`
+                },
+                "Delete Location": {
+                    method: 'POST',
+                    path: '/warehouse-management/location/delete',
+                    description: 'Deletes a location.',
+                    payload: `{\n    <span class="key">"pkLocationId"</span>: <span class="number">56</span>\n}`
+                }
+            },
+            "Orders": {
+                "Get All Orders": {
+                    method: 'GET',
+                    path: '/Order/GetAll',
+                    description: 'Retrieves a list of all customer orders.',
+                    payload: `// No payload required`
+                },
+                "Create Order": {
+                    method: 'POST',
+                    path: '/warehouse-management/order-management/create',
+                    description: 'Creates a new customer order. Payload is a stringified JSON.',
+                    payload: `{\n    <span class="key">"order_jsonData"</span>: <span class="string">"{\\"orderManagement\\":{\\"orders\\":[...]}}"</span>\n}`
+                },
+                "Update Order Status": {
+                    method: 'POST',
+                    path: '/Order/update',
+                    description: 'Updates an order. Used for status changes, creating pick lists, and RMAs.',
+                    payload: `{\n    <span class="key">"orderManagement"</span>: {\n        <span class="key">"orders"</span>: [ { <span class="key">"id"</span>: 205, <span class="key">"status"</span>: <span class="string">"Processing"</span>, <span class="comment">...</span> } ]\n    }\n}`
+                },
+                "Delete Order": {
+                    method: 'POST',
+                    path: '/Order/delete',
+                    description: 'Deletes an order.',
+                    payload: `{\n    <span class="key">"orderId"</span>: <span class="string">"ORD-205"</span>\n}`
+                }
+            },
+            "Suppliers": {
+                "Get All Suppliers": {
+                    method: 'GET',
+                    path: '/warehouse-management/supplier-master/get-all',
+                    description: 'Retrieves a list of all suppliers.',
+                    payload: `// No payload required`
+                },
+                "Create Supplier": {
+                    method: 'POST',
+                    path: '/warehouse-management/supplier-master/create',
+                    description: 'Creates a new supplier record.',
+                    payload: `{\n    <span class="key">"supplierName"</span>: <span class="string">"Global Tech Parts"</span>,\n    <span class="key">"contactPersonName"</span>: <span class="string">"Anjali Singh"</span>,\n    <span class="key">"email"</span>: <span class="string">"anjali.s@globaltech.com"</span>\n}`
+                },
+                "Update Supplier": {
+                    method: 'POST',
+                    path: '/warehouse-management/supplier-master/update',
+                    description: 'Updates an existing supplier.',
+                    payload: `{\n    <span class="key">"supplierId"</span>: <span class="number">15</span>,\n    <span class="key">"supplierName"</span>: <span class="string">"Global Tech Parts Ltd."</span>\n}`
+                },
+                "Delete Supplier": {
+                    method: 'POST',
+                    path: '/warehouse-management/supplier-master/delete',
+                    description: 'Deletes a supplier record.',
+                    payload: `{\n    <span class="key">"supplierId"</span>: <span class="number">15</span>\n}`
+                },
+                "Get All POs": {
+                    method: 'POST',
+                    path: '/warehouse-management/purchase-order/get-all',
+                    description: 'Retrieves all purchase orders.',
+                    payload: `{}`
+                },
+                "Get PO by ID": {
+                    method: 'POST',
+                    path: '/warehouse-management/purchase-order/get-by-id',
+                    description: 'Fetches details for a single purchase order.',
+                    payload: `{\n    <span class="key">"purchaseOrderId"</span>: <span class="number">201</span>\n}`
+                },
+                "Create PO": {
+                    method: 'POST',
+                    path: '/warehouse-management/purchase-order/create',
+                    description: 'Creates a new purchase order. Payload is a stringified JSON.',
+                    payload: `{\n    <span class="key">"order_jsonData"</span>: <span class="string">"{\\"orderNumber\\":\\"PO-123\\",...}"</span>\n}`
+                },
+                "Update PO": {
+                    method: 'POST',
+                    path: '/warehouse-management/purchase-order/update',
+                    description: 'Updates an existing purchase order. Payload is a stringified JSON.',
+                    payload: `{\n    <span class="key">"order_jsonData"</span>: <span class="string">"{\\"purchaseOrderId\\":201,...}"</span>\n}`
+                },
+                "Delete PO": {
+                    method: 'POST',
+                    path: '/warehouse-management/purchase-order/delete',
+                    description: 'Deletes a purchase order.',
+                    payload: `{\n    <span class="key">"purchaseOrderId"</span>: <span class="number">201</span>\n}`
+                }
+            },
+            "Operations": {
+                 "Get Put-Away Records": {
+                    method: 'POST',
+                    path: '/warehouse-management/put-away/get-all',
+                    description: 'Retrieves records of items received and awaiting put-away.',
+                    payload: `{}`
+                },
+                 "Receive Shipment": {
+                    method: 'POST',
+                    path: '/warehouse-management/put-away/create',
+                    description: 'Logs the receipt of items against a purchase order and creates an "awaiting put-away" record.',
+                    payload: `{\n    <span class="key">"purchaseOrderId"</span>: <span class="number">456</span>,\n    <span class="key">"items"</span>: [ { <span class="key">"productId"</span>: 101, <span class="key">"quantity"</span>: 50 } ],\n    <span class="key">"receivedByUserId"</span>: <span class="number">1</span>,\n    <span class="key">"status"</span>: <span class="string">"Received"</span>\n}`
+                },
+                 "Update Put-Away Record": {
+                    method: 'PUT',
+                    path: '/warehouse-management/put-away/update',
+                    description: 'Updates an existing put-away record, for example to reduce quantity on the dock or to mark a put-away as completed.',
+                    payload: `{\n    <span class="key">"id"</span>: <span class="number">123</span>, <span class="comment">// The putaway record ID</span>\n    <span class="key">"purchaseOrderId"</span>: <span class="number">456</span>,\n    <span class="key">"status"</span>: <span class="string">"Completed"</span>,\n    <span class="key">"items"</span>: [ {\n        <span class="key">"id"</span>: <span class="number">789</span>, <span class="comment">// The putaway item ID</span>\n        <span class="key">"productId"</span>: <span class="number">101</span>,\n        <span class="key">"quantity"</span>: <span class="number">50</span>,\n        <span class="key">"locationId"</span>: <span class="number">56</span>\n    } ]\n}`
+                }
+            },
+            "Users": {
+                "Get All Users": {
+                    method: 'POST',
+                    path: '/admin-configuration/user-master/get-all',
+                    description: 'Retrieves a list of all user accounts.',
+                    payload: `{}`
+                },
+                "Get User by ID": {
+                    method: 'POST',
+                    path: '/admin-configuration/user-master/get-by-id',
+                    description: 'Fetches details for a single user.',
+                    payload: `{\n    <span class="key">"userId"</span>: <span class="number">12</span>\n}`
+                },
+                "Create User": {
+                    method: 'POST',
+                    path: '/admin-configuration/user-master/create',
+                    description: 'Creates a new user account.',
+                    payload: `{\n    <span class="key">"userName"</span>: <span class="string">"new.user"</span>,\n    <span class="key">"passwordHash"</span>: <span class="string">"a_strong_password"</span>,\n    <span class="key">"fullName"</span>: <span class="string">"New User"</span>,\n    <span class="key">"roleId"</span>: <span class="number">2</span>\n}`
+                },
+                "Update User": {
+                    method: 'POST',
+                    path: '/admin-configuration/user-master/update',
+                    description: 'Updates an existing user.',
+                    payload: `{\n    <span class="key">"userId"</span>: <span class="string">"12"</span>,\n    <span class="key">"fullName"</span>: <span class="string">"Updated User Name"</span>\n}`
+                },
+                "Toggle User Status": {
+                    method: 'POST',
+                    path: '/admin-configuration/user-master/status-update',
+                    description: 'Activates or deactivates a user account.',
+                    payload: `{\n    <span class="key">"userId"</span>: <span class="number">12</span>,\n    <span class="key">"isActive"</span>: <span class="number">0</span> <span class="comment">// 0=Active, 1=Inactive</span>\n}`
+                }
+            },
+            "Configuration": {
+                "Get Categories": {
+                    method: 'GET',
+                    path: '/Category',
+                    description: 'Fetches a list of all product categories.',
+                    payload: `// No payload required`
+                },
+                "Create Category": {
+                    method: 'POST',
+                    path: '/warehouse-management/category/create',
+                    description: 'Creates a new product category.',
+                    payload: `{\n    <span class="key">"categoryName"</span>: <span class="string">"New Category"</span>\n}`
+                },
+                "Update Category": {
+                    method: 'PUT',
+                    path: '/warehouse-management/category/update',
+                    description: 'Updates an existing category.',
+                    payload: `{\n    <span class="key">"categoryId"</span>: <span class="number">5</span>,\n    <span class="key">"categoryName"</span>: <span class="string">"Updated Name"</span>\n}`
+                },
+                "Delete Category": {
+                    method: 'POST',
+                    path: '/warehouse-management/category/delete',
+                    description: 'Deletes a category.',
+                    payload: `{\n    <span class="key">"categoryId"</span>: <span class="number">5</span>\n}`
+                },
+                 "Get Warehouses": {
+                    method: 'POST',
+                    path: '/warehouse-management/warehouse/get-all',
+                    description: 'Fetches all configured warehouses.',
+                    payload: `{}`
+                }
+            }
+        };
+
+        const sidebarNav = document.getElementById('sidebar-nav');
+        const contentSections = document.getElementById('content-sections');
+
+        Object.entries(apiData).forEach(([moduleName, subModules]) => {
+            const sectionId = moduleName.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+            
+            const li = document.createElement('li');
+            const button = document.createElement('button');
+            button.innerHTML = `${moduleName} <span>&#9662;</span>`;
+            const subMenu = document.createElement('ul');
+            subMenu.className = 'sub-menu';
+            
+            const section = document.createElement('section');
+            section.id = sectionId;
+            const h2 = document.createElement('h2');
+            h2.textContent = moduleName;
+            section.appendChild(h2);
+            
+            Object.entries(subModules).forEach(([subModuleName, details]) => {
+                const subId = `${sectionId}-${subModuleName.toLowerCase().replace(/ /g, '-')}`;
+
+                const subLi = document.createElement('li');
+                const a = document.createElement('a');
+                a.href = `#${subId}`;
+                a.textContent = subModuleName;
+                subLi.appendChild(a);
+                subMenu.appendChild(subLi);
+
+                const article = document.createElement('article');
+                article.id = subId;
+                article.innerHTML = `
+                    <h3>${subModuleName}</h3>
+                    <div class="endpoint-meta">
+                        <span class="method-${details.method}">${details.method}</span>
+                        <span class="path">${details.path}</span>
+                    </div>
+                    <p>${details.description}</p>
+                    <h4>Request Payload</h4>
+                    <pre><code>${details.payload}</code></pre>
+                `;
+                section.appendChild(article);
+            });
+
+            li.appendChild(button);
+            li.appendChild(subMenu);
+            sidebarNav.appendChild(li);
+            contentSections.appendChild(section);
+
+            button.addEventListener('click', () => {
+                subMenu.classList.toggle('open');
+                button.querySelector('span').innerHTML = subMenu.classList.contains('open') ? '&#9652;' : '&#9662;';
+            });
+        });
+
+        const links = document.querySelectorAll('.sidebar a');
+        const sections = document.querySelectorAll('.main-content article');
+
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+        
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    links.forEach(link => {
+                        link.classList.toggle('active', link.getAttribute('href') === `#${entry.target.id}`);
+                    });
+                }
+            });
+        }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
+
+        sections.forEach(section => observer.observe(section));
+
+    </script>
+</body>
+</html>

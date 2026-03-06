@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warehouse Operations API Payloads</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --header-color: #0f172a;
+            --link-color: #2563eb;
+            --link-hover-color: #1d4ed8;
+            --code-bg: #f1f5f9;
+            --border-color: #e2e8f0;
+            --highlight-bg: #e2e8f0;
+            --comment-color: #64748b;
+            --key-color: #0b7493;
+            --string-color: #22c55e;
+            --number-color: #f97316;
+            --boolean-color: #8b5cf6;
+            --null-color: #ef4444;
+        }
+        .dark {
+            --bg-color: #1a1b26;
+            --text-color: #a9b1d6;
+            --header-color: #c0caf5;
+            --link-color: #7aa2f7;
+            --link-hover-color: #b4c8f0;
+            --code-bg: #1e202e;
+            --border-color: #3b4261;
+            --highlight-bg: #292e42;
+            --comment-color: #565f89;
+            --key-color: #7dcfff;
+            --string-color: #9ece6a;
+            --number-color: #ff9e64;
+            --boolean-color: #bb9af7;
+            --null-color: #f7768e;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 2rem 3rem;
+        }
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1, h2, h3 {
+            color: var(--header-color);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        h1 { font-size: 2.5rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; }
+        h2 { font-size: 2rem; margin-top: 4rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.5rem; color: var(--link-color); }
+        p, .endpoint-meta { margin-bottom: 1rem; }
+        .endpoint-meta span {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-family: "Fira Code", "Consolas", monospace;
+            font-size: 0.9em;
+            margin-right: 0.5rem;
+        }
+        .endpoint-meta .method-POST { background-color: #49cc90; color: #fff; font-weight: bold; }
+        .endpoint-meta .method-PUT { background-color: #fca130; color: #fff; font-weight: bold; }
+        .endpoint-meta .path { background-color: var(--highlight-bg); color: var(--text-color); }
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: "Fira Code", "Consolas", "Monaco", monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+        code .comment { color: var(--comment-color); }
+        code .key { color: var(--key-color); }
+        code .string { color: var(--string-color); }
+        code .number { color: var(--number-color); }
+        code .boolean { color: var(--boolean-color); }
+        code .null { color: var(--null-color); }
+    </style>
+</head>
+<body class="dark">
+    <main>
+        <h1>Warehouse Operations API Payloads</h1>
+        <p>This document details the JSON payloads for key warehouse operations like Picking, Packing & Shipping, and Cycle Counting.</p>
+
+        <section id="picking">
+            <h2>Picking Operations</h2>
+            <p>Picking involves gathering items from their storage locations to fulfill a customer order. The process starts by creating a pick list for an order that is in the 'Processing' state.</p>
+            
+            <article id="picking-create">
+                <h3>Create Pick List</h3>
+                <div class="endpoint-meta">
+                    <span class="method-POST">POST</span>
+                    <span class="path">/Order/update</span>
+                </div>
+                <p>To create a pick list, you update the parent order's status to 'Ready for Pickup' and include a `pickLists` array with the items to be picked. The system generates a pick list based on the order items and their stock locations.</p>
+                <h4>Request Payload</h4>
+                <pre><code>{
+    <span class="key">"orderManagement"</span>: {
+        <span class="key">"orders"</span>: [
+            {
+                <span class="key">"id"</span>: <span class="number">205</span>,
+                <span class="key">"status"</span>: <span class="string">"Ready for Pickup"</span>,
+                <span class="comment">// ... other order fields</span>
+            }
+        ],
+        <span class="key">"pickLists"</span>: [
+            {
+                <span class="key">"id"</span>: <span class="number">0</span>, <span class="comment">// 0 for creation</span>
+                <span class="key">"orderId"</span>: <span class="number">205</span>,
+                <span class="key">"status"</span>: <span class="string">"Pending"</span>,
+                <span class="key">"items"</span>: [
+                    {
+                        <span class="key">"productId"</span>: <span class="number">101</span>,
+                        <span class="key">"quantity"</span>: <span class="number">2</span>,
+                        <span class="key">"locationId"</span>: <span class="number">56</span>, <span class="comment">// ID of the bin/shelf</span>
+                        <span class="key">"picked"</span>: <span class="boolean">false</span>
+                    },
+                    {
+                        <span class="key">"productId"</span>: <span class="number">102</span>,
+                        <span class="key">"quantity"</span>: <span class="number">1</span>,
+                        <span class="key">"locationId"</span>: <span class="number">58</span>,
+                        <span class="key">"picked"</span>: <span class="boolean">false</span>
+                    }
+                ]
+            }
+        ],
+        <span class="key">"packedOrders"</span>: [],
+        <span class="key">"rmAs"</span>: []
+    }
+}</code></pre>
+            </article>
+
+            <article id="picking-update">
+                <h3>Update Pick Status</h3>
+                <div class="endpoint-meta">
+                    <span class="method-PUT">PUT</span>
+                    <span class="path">/operations/picklists/{pickListId}/items/{productId}</span>
+                </div>
+                <p>As a picker scans or manually confirms an item has been picked, this endpoint is called to update the status of that specific item on the pick list.</p>
+                <h4>Request Payload</h4>
+                <pre><code>{
+    <span class="key">"picked"</span>: <span class="boolean">true</span>
+}</code></pre>
+            </article>
+        </section>
+
+        <section id="packing-shipping">
+            <h2>Packing & Shipping Operations</h2>
+            <p>Once all items on a pick list have been marked as 'Picked', the order moves to the packing and shipping stage.</p>
+            
+            <article id="packing">
+                <h3>Pack Order</h3>
+                <div class="endpoint-meta">
+                    <span class="method-POST">POST</span>
+                    <span class="path">/operations/picklists/{pickListId}/pack</span>
+                </div>
+                <p>This endpoint is called when a packer confirms that all items for an order are packed and ready. It creates a `PackedOrder` record and updates the original order's status.</p>
+                <h4>Request Payload</h4>
+                <pre><code>{
+    <span class="comment">// Empty payload, the pickListId in the URL is sufficient.</span>
+}</code></pre>
+            </article>
+
+            <article id="shipping">
+                <h3>Ship Order</h3>
+                <div class="endpoint-meta">
+                    <span class="method-POST">POST</span>
+                    <span class="path">/operations/packedorders/{packedOrderId}/ship</span>
+                </div>
+                <p>This final step marks the packed order as shipped. It updates the `PackedOrder` and the original `Order` statuses to 'Shipped' and records the user who performed the action.</p>
+                <h4>Request Payload</h4>
+                <pre><code>{
+    <span class="key">"userId"</span>: <span class="string">"1"</span> <span class="comment">// ID of the user shipping the order</span>
+}</code></pre>
+            </article>
+        </section>
+
+        <section id="cycle-counting">
+            <h2>Cycle Counting Operations</h2>
+            <p>Cycle counting is an inventory auditing procedure where a small subset of inventory is counted on a given day. This ensures inventory accuracy without shutting down the warehouse for a full count.</p>
+            
+            <article id="cycle-create">
+                <h3>Create Cycle Count Task</h3>
+                <div class="endpoint-meta">
+                    <span class="method-POST">POST</span>
+                    <span class="path">/operations/cyclecounts</span>
+                </div>
+                <p>Initiates a new cycle count task. The payload contains a list of items (product and location pairs) that need to be counted.</p>
+                <h4>Request Payload</h4>
+                <pre><code>{
+    <span class="key">"itemsToCount"</span>: [
+        {
+            <span class="key">"productId"</span>: <span class="string">"p1"</span>,
+            <span class="key">"locationId"</span>: <span class="string">"loc-101"</span>
+        },
+        {
+            <span class="key">"productId"</span>: <span class="string">"p5"</span>,
+            <span class="key">"locationId"</span>: <span class="string">"loc-103"</span>
+        }
+    ]
+}</code></pre>
+            </article>
+
+            <article id="cycle-update">
+                <h3>Update Counted Quantity</h3>
+                <div class="endpoint-meta">
+                    <span class="method-PUT">PUT</span>
+                    <span class="path">/operations/cyclecounts/{cycleCountId}/items/{itemId}</span>
+                </div>
+                <p>Submits the actual counted quantity for a specific item within a cycle count task. This is done for each item in the task list.</p>
+                <h4>Request Payload</h4>
+                <pre><code>{
+    <span class="key">"countedQuantity"</span>: <span class="number">98</span> <span class="comment">// The actual number of items counted</span>
+}</code></pre>
+            </article>
+
+            <article id="cycle-finalize">
+                <h3>Finalize Cycle Count</h3>
+                <div class="endpoint-meta">
+                    <span class="method-POST">POST</span>
+                    <span class="path">/operations/cyclecounts/{cycleCountId}/finalize</span>
+                </div>
+                <p>Once all items in a task have been counted, this endpoint is called to finalize the count. The system will compare the counted quantities with the system quantities and create stock adjustments for any discrepancies.</p>
+                <h4>Request Payload</h4>
+                <pre><code>{
+    <span class="key">"userId"</span>: <span class="string">"1"</span> <span class="comment">// ID of the user finalizing the count</span>
+}</code></pre>
+            </article>
+        </section>
+    </main>
+</body>
+</html>
